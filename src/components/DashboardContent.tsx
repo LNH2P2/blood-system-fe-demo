@@ -1,7 +1,7 @@
-import StatCard from './StatCard'
-import RecentRequests from './RecentRequests'
-import BloodInventorySummary from './BloodInventorySummary'
-import QuickActions from './QuickActions'
+import StatCard from './blood-donation/StatCard'
+import RecentRequests from './blood-donation/RecentRequests'
+import BloodInventorySummary from './blood-donation/BloodInventorySummary'
+import QuickActions from './blood-donation/QuickActions'
 import { ClipboardList, AlertTriangle, UserPlus, Droplets } from 'lucide-react'
 
 interface DashboardContentProps {

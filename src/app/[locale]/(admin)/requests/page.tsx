@@ -1,6 +1,5 @@
 'use client'
 
-import DashboardLayout from '@/components/DashboardLayout'
 import RequestsContent from '@/components/blood-donation/RequestsContent'
 
 export default function RequestsPage() {
@@ -67,9 +66,5 @@ export default function RequestsPage() {
     }
   ]
 
-  return (
-    <DashboardLayout activeMenu='requests'>
-      <RequestsContent requests={recentRequests} />
-    </DashboardLayout>
-  )
+  return <RequestsContent requests={recentRequests} />
 }

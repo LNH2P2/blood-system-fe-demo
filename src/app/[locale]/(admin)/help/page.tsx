@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import NavigationSidebar from '@/components/NavigationSidebar'
 import AppHeader from '@/components/AppHeader'
-import PlaceholderContent from '@/components/blood-donation/PlaceholderContent'
+import PlaceholderContent from '@/components/PlaceholderContent'
 
 export default function HelpPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
