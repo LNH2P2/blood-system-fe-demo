@@ -217,12 +217,17 @@ export default function BlogContent({ blogs, onRefresh, onFiltersChange, loading
               </div>
             </div>
             <div className='flex items-center space-x-3'>
-              <Select onValueChange={(value) => onFiltersChange({ status: value as BlogStatus })}>
+              <Select
+                onValueChange={(value) => {
+                  const filterStatus = value === 'all' ? undefined : (value as BlogStatus)
+                  onFiltersChange({ status: filterStatus })
+                }}
+              >
                 <SelectTrigger className='w-48 border-red-200 focus:border-red-500'>
                   <SelectValue placeholder='Lọc theo trạng thái' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value=''>Tất cả</SelectItem>
+                  <SelectItem value='all'>Tất cả</SelectItem>
                   <SelectItem value={BlogStatus.PUBLISHED}>Đã xuất bản</SelectItem>
                   <SelectItem value={BlogStatus.DRAFT}>Bản nháp</SelectItem>
                   <SelectItem value={BlogStatus.ARCHIVED}>Đã lưu trữ</SelectItem>
