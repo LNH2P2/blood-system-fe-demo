@@ -10,6 +10,7 @@ import {
   Calendar,
   ClipboardList,
   Droplets,
+  FileText,
   Heart,
   HelpCircle,
   Home,
@@ -74,6 +75,12 @@ export default function NavigationSidebar({ sidebarOpen, setSidebarOpen }: Navig
       label: 'Lịch hẹn',
       icon: Calendar,
       href: '/appointments'
+    },
+    {
+      id: 'blog',
+      label: 'Quản lý Blog',
+      icon: FileText,
+      href: '/blog'
     },
     {
       id: 'reports',
