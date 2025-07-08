@@ -2,9 +2,7 @@ import { Card, CardContent } from '@/components/ui/card'
 
 import { StatData } from './types'
 
-interface StatCardProps extends StatData {}
-
-export default function StatCard({ title, value, change, changeType, icon: Icon, color, bg }: StatCardProps) {
+export default function StatCard({ title, value, change, changeType, icon: Icon, color, bg }: StatData) {
   return (
     <Card className='hover:shadow-md transition-shadow'>
       <CardContent className='p-6'>

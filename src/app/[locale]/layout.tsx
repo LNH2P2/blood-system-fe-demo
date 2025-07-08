@@ -1,9 +1,13 @@
+import { Toaster } from '@/components/ui/sonner'
+import { AuthProvider } from '@/contexts/auth-context'
+import { ReactQueryProvider } from '@/lib/query-client'
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import './globals.css'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
+import { Geist, Geist_Mono } from 'next/font/google'
 import { notFound } from 'next/navigation'
 import { routing } from '../../i18n/routing'
+import './globals.css'
+import { GlobalStorageListener } from '@/contexts/global-storage'
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin']
@@ -34,7 +38,13 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <Toaster />
+        <GlobalStorageListener />
+        <AuthProvider>
+          <NextIntlClientProvider>
+            <ReactQueryProvider>{children}</ReactQueryProvider>
+          </NextIntlClientProvider>
+        </AuthProvider>
       </body>
     </html>
   )
