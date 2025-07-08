@@ -3,7 +3,10 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { notFound } from 'next/navigation'
+import QueryProvider from '@/components/providers/query-provider'
+import { Toaster } from '@/components/ui/sonner'
 import { routing } from '../../i18n/routing'
+
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin']
@@ -34,7 +37,10 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <QueryProvider>{children}</QueryProvider>
+          <Toaster />
+        </NextIntlClientProvider>
       </body>
     </html>
   )
