@@ -19,7 +19,8 @@ import {
   ClipboardList,
   HelpCircle,
   LogOut,
-  User
+  User,
+  Hospital
 } from 'lucide-react'
 
 interface MenuItem {
@@ -68,6 +69,12 @@ export default function NavigationSidebar({ sidebarOpen, setSidebarOpen }: Navig
       badge: '5',
       badgeColor: 'secondary',
       href: '/inventory'
+    },
+    {
+      id: 'hospitals',
+      label: 'Bệnh viện',
+      icon: Hospital,
+      href: '/hospitals'
     },
     {
       id: 'appointments',
