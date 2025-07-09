@@ -3,6 +3,7 @@
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { formatDate } from '@/hooks/format-date'
+import { useUploadLocalFile } from '@/hooks/use-api/use-upfile'
 import {
   useCreateUserAddress,
   useDeleteUserAddress,
@@ -11,16 +12,18 @@ import {
   useUpdateUserAddress
 } from '@/hooks/use-api/use-user'
 import { cn } from '@/lib/utils'
+import UserImage from '@/public/user.png'
 import { addressSchema, updateUserSchema } from '@/types/user'
 import { zodResolver } from '@hookform/resolvers/zod'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import Loading from '../loading/loading'
 import { Button } from '../ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Input } from '../ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
-
 export default function UserProfile({ userId }: { userId: string }) {
   const { data: user, isLoading } = useGetUserById(userId)
   const updateUser = useUpdateUser(userId)
@@ -28,6 +31,8 @@ export default function UserProfile({ userId }: { userId: string }) {
   const deleteAddress = useDeleteUserAddress(userId)
   const [isEditing, setIsEditing] = useState(false)
   const [editingAddress, setEditingAddress] = useState<any | null>(null)
+  const uploadImage = useUploadLocalFile()
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [editAddressData, setEditAddressData] = useState({
     street: '',
     district: '',
@@ -63,12 +68,17 @@ export default function UserProfile({ userId }: { userId: string }) {
       const original = user?.payload.data as Record<string, any>
       if (!original) return
 
-      // So sánh và lấy ra các trường thay đổi
       const changedValues: Record<string, any> = {}
+
       for (const key in values) {
         if (values[key] !== original[key]) {
           changedValues[key] = values[key]
         }
+      }
+
+      if (selectedImage) {
+        const uploaded = await uploadImage.mutateAsync(selectedImage)
+        changedValues.image = uploaded.payload.data
       }
 
       if (Object.keys(changedValues).length === 0) {
@@ -152,7 +162,7 @@ export default function UserProfile({ userId }: { userId: string }) {
     }
   }
   if (isLoading) {
-    return <div className='p-6 max-w-4xl mx-auto'>Đang tải...</div>
+    return <Loading />
   }
 
   return (
@@ -164,6 +174,46 @@ export default function UserProfile({ userId }: { userId: string }) {
           </CardHeader>
           <CardContent className='grid gap-4'>
             <form onSubmit={form.handleSubmit(onSubmit)} className='grid gap-4'>
+              {isEditing ? (
+                <div className='flex items-center gap-4'>
+                  {/* Ảnh đại diện hiện tại hoặc đã chọn */}
+                  <Image
+                    src={selectedImage ? URL.createObjectURL(selectedImage) : user?.payload.data.image || UserImage}
+                    alt='Avatar'
+                    width={96}
+                    height={96}
+                    className='w-24 h-24 rounded-full object-cover border'
+                  />
+
+                  {/* Nếu đang chỉnh sửa, hiển thị input để chọn ảnh mới */}
+                  {isEditing && (
+                    <div className='flex flex-col gap-2'>
+                      <label className='text-sm font-medium'>Thay đổi ảnh đại diện</label>
+                      <Input
+                        type='file'
+                        accept='image/*'
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            setSelectedImage(e.target.files[0])
+                          }
+                        }}
+                      />
+                      {selectedImage && <p className='text-xs text-gray-500 italic'>{selectedImage.name}</p>}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  {/* Hiển thị ảnh đại diện hiện tại */}
+                  <Image
+                    src={selectedImage ? URL.createObjectURL(selectedImage) : user?.payload.data.image || UserImage}
+                    alt='Avatar'
+                    width={96}
+                    height={96}
+                    className='w-24 h-24 rounded-full object-cover border'
+                  />
+                </>
+              )}
               <div>
                 <Input {...form.register('fullName')} placeholder='Họ và tên' readOnly={!isEditing} />
                 {form.formState.errors.fullName && (

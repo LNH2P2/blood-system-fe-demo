@@ -24,6 +24,7 @@ import {
 import Link from 'next/link'
 import { usePathname, useRouter } from '../i18n/navigation'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
+import Image from 'next/image'
 
 interface MenuItem {
   id: string
@@ -96,7 +97,6 @@ export default function NavigationSidebar({ sidebarOpen, setSidebarOpen }: Navig
       id: 'management-user',
       label: 'Quản lý người dùng',
       icon: Users,
-      badge: '12',
       badgeColor: 'default',
       href: '/user-table'
     }
@@ -203,9 +203,20 @@ export default function NavigationSidebar({ sidebarOpen, setSidebarOpen }: Navig
                     !sidebarOpen && 'justify-center'
                   }`}
                 >
-                  <div className='w-8 h-8 bg-red-100 rounded-full flex items-center justify-center'>
-                    <User className='h-4 w-4 text-red-600' />
-                  </div>
+                  {user.image ? (
+                    <Image
+                      src={user.image}
+                      alt='Avatar'
+                      width={32}
+                      height={32}
+                      className='w-8 h-8 rounded-full object-cover'
+                    />
+                  ) : (
+                    <div className='w-8 h-8 bg-red-100 rounded-full flex items-center justify-center'>
+                      <User className='h-4 w-4 text-red-600' />
+                    </div>
+                  )}
+
                   {sidebarOpen && (
                     <div className='flex-1'>
                       <p className='text-sm font-medium'>{user.username || 'Người dùng'}</p>

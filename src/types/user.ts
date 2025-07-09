@@ -74,13 +74,16 @@ export const userApiResponseSchema = z.object({
 export const userListResponseSchema = z.object({
   message: z.string(),
   data: z.object({
-    meta: z.object({
-      current: z.number(),
-      limit: z.number(),
-      pages: z.number(),
-      total: z.number()
+    data: z.object({
+      meta: z.object({
+        current: z.number(),
+        limit: z.number(),
+        pages: z.number(),
+        total: z.number()
+      }),
+      result: z.array(userResponseSchema)
     }),
-    result: z.array(userResponseSchema)
+    message: z.string()
   })
 })
 

@@ -51,16 +51,23 @@ function onRefreshed(newToken: string) {
 
 async function refreshAccessToken() {
   try {
+    const refreshToken = localStorage.getItem('refresh_token')
+    if (!refreshToken) {
+      throw new Error('No refresh token found')
+    }
     const res = await fetch(`${env.NEXT_PUBLIC_API_ENDPOINT}/auth/refresh-token`, {
       method: 'POST',
-      credentials: 'include'
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ refreshToken: localStorage.getItem('refresh_token') })
     })
-    if (!res.ok) throw new Error('Refresh failed')
+    if (res.status !== 200) throw new Error('Refresh failed')
     const data = await res.json()
-    if (!data.accessToken || typeof data.accessToken !== 'string') {
+    if (!data.data.access_token || typeof data.data.access_token !== 'string') {
       throw new Error('No access token received')
     }
-    const newAccessToken = data.accessToken
+    const newAccessToken = data.data.access_token
     localStorage.setItem('access_token', newAccessToken)
     return newAccessToken
   } catch (err) {
