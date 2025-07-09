@@ -46,7 +46,7 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/vi/login', request.url))
     }
 
-    if (pathname.startsWith('/vi/admin') && decoded.role !== 'admin') {
+    if (pathname.startsWith('/vi/dashboard') && decoded.role !== 'admin') {
       return NextResponse.redirect(new URL('/unauthorized', request.url))
     }
 

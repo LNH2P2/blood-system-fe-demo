@@ -59,6 +59,9 @@
       ],
       "@/contexts/*": [
         "./src/contexts/*"
+      ],
+      "@/apis/*": [
+        "./src/apis/*"
       ]
     }
   },

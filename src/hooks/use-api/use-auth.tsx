@@ -1,6 +1,7 @@
 // hooks/useAuth.ts
-import { authApi } from '@/lib/apis/auth.api'
-import { ChangePasswordDto, CreateUserDto, LoginDto, ResetPasswordDto, VerifyOtpDto } from '@/types/auth'
+import { authApi } from '../../apis/auth.api'
+import { ChangePasswordDto, LoginDto, ResetPasswordDto, VerifyOtpDto } from '@/types/auth'
+import { CreateUserDto } from '@/types/user'
 import { useMutation } from '@tanstack/react-query'
 
 // Đăng ký
