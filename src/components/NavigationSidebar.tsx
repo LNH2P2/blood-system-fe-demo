@@ -17,7 +17,8 @@ import {
   Menu,
   Settings,
   User,
-  Hospitals,
+  Users,
+  Hospital,
   X
 } from 'lucide-react'
 import { usePathname, useRouter } from '../i18n/navigation'
