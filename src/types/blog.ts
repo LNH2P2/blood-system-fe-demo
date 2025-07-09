@@ -1,7 +1,7 @@
 export enum BlogStatus {
-  DRAFT = 'DRAFT',
-  PUBLISHED = 'PUBLISHED',
-  ARCHIVED = 'ARCHIVED'
+  DRAFT = 'draft',
+  PUBLISHED = 'published',
+  ARCHIVED = 'archived'
 }
 
 export interface Blog {
@@ -10,10 +10,11 @@ export interface Blog {
   image: string
   summary: string
   content: string
-  status: BlogStatus
-  viewCount: number
+  status?: BlogStatus
+  category?: string
   createdAt: string
   updatedAt: string
+  __v?: number
 }
 
 export interface CreateBlogDto {
@@ -22,6 +23,7 @@ export interface CreateBlogDto {
   summary: string
   content: string
   status: BlogStatus
+  category?: string
 }
 
 export interface UpdateBlogDto {
@@ -30,18 +32,26 @@ export interface UpdateBlogDto {
   summary?: string
   content?: string
   status?: BlogStatus
+  category?: string
 }
 
 export interface BlogListResponse {
-  blogs: Blog[]
-  total: number
-  page: number
-  limit: number
+  statusCode: number
+  message: string
+  data: Blog[]
+  pagination: {
+    limit: number
+    currentPage: number
+    totalRecords: number
+    totalPages: number
+  }
 }
 
 export interface BlogFilters {
   status?: BlogStatus
   search?: string
-  sortBy?: 'createdAt' | 'updatedAt' | 'viewCount' | 'title'
+  sortBy?: 'createdAt' | 'updatedAt' | 'title'
   sortOrder?: 'asc' | 'desc'
+  page?: number
+  limit?: number
 }

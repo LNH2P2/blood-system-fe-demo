@@ -5,7 +5,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { FileText, Eye, Calendar, Filter, Plus, Edit, Trash2, Archive, Search } from 'lucide-react'
+import {
+  FileText,
+  Eye,
+  Calendar,
+  Filter,
+  Plus,
+  Edit,
+  Trash2,
+  Archive,
+  Search,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react'
 import { Blog, BlogStatus, BlogFilters } from '@/types/blog'
 import { blogApi } from '@/lib/apis/blog.api'
 import BlogForm from './BlogForm'
@@ -16,9 +28,15 @@ interface BlogContentProps {
   onRefresh: () => void
   onFiltersChange: (filters: BlogFilters) => void
   loading: boolean
+  pagination?: {
+    currentPage: number
+    totalPages: number
+    totalRecords: number
+    limit: number
+  }
 }
 
-export default function BlogContent({ blogs, onRefresh, onFiltersChange, loading }: BlogContentProps) {
+export default function BlogContent({ blogs, onRefresh, onFiltersChange, loading, pagination }: BlogContentProps) {
   const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null)
   const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -80,7 +98,11 @@ export default function BlogContent({ blogs, onRefresh, onFiltersChange, loading
     }
   }
 
-  const getStatusColor = (status: BlogStatus) => {
+  const handlePageChange = (page: number) => {
+    onFiltersChange({ page })
+  }
+
+  const getStatusColor = (status?: BlogStatus) => {
     switch (status) {
       case BlogStatus.PUBLISHED:
         return 'bg-green-100 text-green-800 border-green-300'
@@ -93,7 +115,7 @@ export default function BlogContent({ blogs, onRefresh, onFiltersChange, loading
     }
   }
 
-  const getStatusBadge = (status: BlogStatus) => {
+  const getStatusBadge = (status?: BlogStatus) => {
     switch (status) {
       case BlogStatus.PUBLISHED:
         return 'default'
@@ -110,9 +132,8 @@ export default function BlogContent({ blogs, onRefresh, onFiltersChange, loading
     const published = blogs.filter((b) => b.status === BlogStatus.PUBLISHED).length
     const draft = blogs.filter((b) => b.status === BlogStatus.DRAFT).length
     const archived = blogs.filter((b) => b.status === BlogStatus.ARCHIVED).length
-    const totalViews = blogs.reduce((sum, blog) => sum + blog.viewCount, 0)
 
-    return { published, draft, archived, totalViews }
+    return { published, draft, archived }
   }
 
   const stats = getStats()
@@ -161,8 +182,8 @@ export default function BlogContent({ blogs, onRefresh, onFiltersChange, loading
           <CardContent className='p-4'>
             <div className='flex items-center justify-between'>
               <div>
-                <p className='text-sm font-medium text-blue-600'>Tổng lượt xem</p>
-                <p className='text-2xl font-bold text-blue-700'>{stats.totalViews}</p>
+                <p className='text-sm font-medium text-blue-600'>Tổng bài viết</p>
+                <p className='text-2xl font-bold text-blue-700'>{pagination?.totalRecords || blogs.length}</p>
               </div>
               <Eye className='h-6 w-6 text-blue-500' />
             </div>
@@ -195,7 +216,7 @@ export default function BlogContent({ blogs, onRefresh, onFiltersChange, loading
             </div>
             <div className='text-right'>
               <div className='text-sm text-red-100'>Tổng bài viết</div>
-              <div className='text-2xl font-bold'>{blogs.length}</div>
+              <div className='text-2xl font-bold'>{pagination?.totalRecords || blogs.length}</div>
             </div>
             <div className='text-right'>
               <div className='text-sm text-red-100'>Đã xuất bản</div>
@@ -268,15 +289,10 @@ export default function BlogContent({ blogs, onRefresh, onFiltersChange, loading
                         variant={getStatusBadge(blog.status)}
                         className={`font-semibold ${getStatusColor(blog.status)}`}
                       >
-                        {blog.status}
+                        {blog.status || 'draft'}
                       </Badge>
                     </div>
-                    <div className='grid grid-cols-4 gap-6 text-sm mb-3'>
-                      <div className='flex items-center space-x-2'>
-                        <Eye className='h-4 w-4 text-blue-500' />
-                        <span className='text-gray-600'>Lượt xem:</span>
-                        <span className='font-bold text-gray-800'>{blog.viewCount}</span>
-                      </div>
+                    <div className='grid grid-cols-2 gap-6 text-sm mb-3'>
                       <div className='flex items-center space-x-2 text-gray-600'>
                         <Calendar className='h-4 w-4 text-green-500' />
                         <span>Tạo: {new Date(blog.createdAt).toLocaleDateString('vi-VN')}</span>
@@ -307,7 +323,7 @@ export default function BlogContent({ blogs, onRefresh, onFiltersChange, loading
                       <Edit className='h-4 w-4 mr-2' />
                       Chỉnh sửa
                     </Button>
-                    {blog.status === BlogStatus.DRAFT && (
+                    {(!blog.status || blog.status === BlogStatus.DRAFT) && (
                       <Button
                         size='sm'
                         className='bg-green-600 hover:bg-green-700'
@@ -353,6 +369,73 @@ export default function BlogContent({ blogs, onRefresh, onFiltersChange, loading
             </div>
           )}
         </CardContent>
+
+        {/* Pagination */}
+        {pagination && pagination.totalPages > 1 && (
+          <div className='p-4 border-t bg-gray-50/50'>
+            <div className='flex items-center justify-between'>
+              <div className='text-sm text-gray-600'>
+                Hiển thị {(pagination.currentPage - 1) * pagination.limit + 1} -{' '}
+                {Math.min(pagination.currentPage * pagination.limit, pagination.totalRecords)}
+                của {pagination.totalRecords} bài viết
+              </div>
+              <div className='flex items-center space-x-2'>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  disabled={pagination.currentPage === 1}
+                  onClick={() => handlePageChange(pagination.currentPage - 1)}
+                  className='border-red-200 text-red-700 hover:bg-red-50 disabled:opacity-50'
+                >
+                  <ChevronLeft className='h-4 w-4 mr-1' />
+                  Trước
+                </Button>
+
+                <div className='flex items-center space-x-1'>
+                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                    let pageNum
+                    if (pagination.totalPages <= 5) {
+                      pageNum = i + 1
+                    } else if (pagination.currentPage <= 3) {
+                      pageNum = i + 1
+                    } else if (pagination.currentPage >= pagination.totalPages - 2) {
+                      pageNum = pagination.totalPages - 4 + i
+                    } else {
+                      pageNum = pagination.currentPage - 2 + i
+                    }
+
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={pageNum === pagination.currentPage ? 'default' : 'outline'}
+                        size='sm'
+                        onClick={() => handlePageChange(pageNum)}
+                        className={
+                          pageNum === pagination.currentPage
+                            ? 'bg-red-600 hover:bg-red-700'
+                            : 'border-red-200 text-red-700 hover:bg-red-50'
+                        }
+                      >
+                        {pageNum}
+                      </Button>
+                    )
+                  })}
+                </div>
+
+                <Button
+                  variant='outline'
+                  size='sm'
+                  disabled={pagination.currentPage === pagination.totalPages}
+                  onClick={() => handlePageChange(pagination.currentPage + 1)}
+                  className='border-red-200 text-red-700 hover:bg-red-50 disabled:opacity-50'
+                >
+                  Sau
+                  <ChevronRight className='h-4 w-4 ml-1' />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* Blog Detail Modal */}

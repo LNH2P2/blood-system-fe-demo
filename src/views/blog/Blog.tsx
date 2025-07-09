@@ -4,12 +4,20 @@ import { useState, useEffect } from 'react'
 import { blogApi } from '@/lib/apis/blog.api'
 import { Blog, BlogFilters } from '@/types/blog'
 import BlogContent from '@/components/blog/BlogContent'
-import { mockBlogs } from '../../data/mockBlogs'
 
 export default function BlogPageView() {
   const [blogs, setBlogs] = useState<Blog[]>([])
   const [loading, setLoading] = useState(true)
-  const [filters, setFilters] = useState<BlogFilters>({})
+  const [filters, setFilters] = useState<BlogFilters>({
+    page: 1,
+    limit: 10
+  })
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalRecords: 0,
+    limit: 10
+  })
 
   useEffect(() => {
     loadBlogs()
@@ -19,50 +27,16 @@ export default function BlogPageView() {
     try {
       setLoading(true)
 
-      // Using mock data for testing - replace with API call when backend is ready
-      // const response = await blogApi.getBlogs(filters)
-      // setBlogs(response.payload.blogs)
+      const response = await blogApi.getBlogs(filters)
+      console.log('response of fetching blogs in BlogPageView is: ', response)
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      // Filter mock data based on filters
-      let filteredBlogs = [...mockBlogs]
-
-      if (filters.status) {
-        filteredBlogs = filteredBlogs.filter((blog) => blog.status === filters.status)
+      if (response.payload?.data) {
+        setBlogs(response.payload.data)
+        setPagination(response.payload.pagination)
       }
-
-      if (filters.search) {
-        const searchTerm = filters.search.toLowerCase()
-        filteredBlogs = filteredBlogs.filter(
-          (blog) =>
-            blog.title.toLowerCase().includes(searchTerm) ||
-            blog.summary.toLowerCase().includes(searchTerm) ||
-            blog.content.toLowerCase().includes(searchTerm)
-        )
-      }
-
-      // Sort blogs
-      if (filters.sortBy) {
-        filteredBlogs.sort((a, b) => {
-          const aValue = a[filters.sortBy!]
-          const bValue = b[filters.sortBy!]
-
-          if (filters.sortOrder === 'desc') {
-            return bValue > aValue ? 1 : -1
-          } else {
-            return aValue > bValue ? 1 : -1
-          }
-        })
-      } else {
-        // Default sort by creation date (newest first)
-        filteredBlogs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      }
-
-      setBlogs(filteredBlogs)
     } catch (error) {
       console.error('Error loading blogs:', error)
+      setBlogs([])
     } finally {
       setLoading(false)
     }
@@ -73,7 +47,12 @@ export default function BlogPageView() {
   }
 
   const handleFiltersChange = (newFilters: BlogFilters) => {
-    setFilters(newFilters)
+    setFilters((prev) => ({
+      ...prev,
+      ...newFilters,
+      // Reset to page 1 when filters change (except pagination changes)
+      page: newFilters.page !== undefined ? newFilters.page : 1
+    }))
   }
 
   if (loading) {
@@ -84,5 +63,13 @@ export default function BlogPageView() {
     )
   }
 
-  return <BlogContent blogs={blogs} onRefresh={handleRefresh} onFiltersChange={handleFiltersChange} loading={loading} />
+  return (
+    <BlogContent
+      blogs={blogs}
+      onRefresh={handleRefresh}
+      onFiltersChange={handleFiltersChange}
+      loading={loading}
+      pagination={pagination}
+    />
+  )
 }

@@ -1,10 +1,10 @@
 import http from '@/lib/http'
 import { Blog, CreateBlogDto, UpdateBlogDto, BlogListResponse, BlogFilters } from '@/types/blog'
 
-const BASE_PATH = '/blogs'
+const BASE_PATH = '/blog'
 
 export const blogApi = {
-  // Get all blogs with filters
+  // Get all blogs with filters and pagination
   getBlogs(filters?: BlogFilters) {
     const queryParams = new URLSearchParams()
 
@@ -12,6 +12,8 @@ export const blogApi = {
     if (filters?.search) queryParams.append('search', filters.search)
     if (filters?.sortBy) queryParams.append('sortBy', filters.sortBy)
     if (filters?.sortOrder) queryParams.append('sortOrder', filters.sortOrder)
+    if (filters?.page) queryParams.append('page', filters.page.toString())
+    if (filters?.limit) queryParams.append('limit', filters.limit.toString())
 
     const queryString = queryParams.toString()
     const url = queryString ? `${BASE_PATH}?${queryString}` : BASE_PATH
