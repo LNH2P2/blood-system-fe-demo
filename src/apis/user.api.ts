@@ -6,6 +6,7 @@ import {
   CreateUserDto,
   UpdateAddressDto,
   UpdateUserDto,
+  UserApiResponse,
   UserResponse,
   UsersListResponse
 } from '@/types/user'
@@ -26,7 +27,7 @@ export const getAllUsers = (params: { current?: number; limit?: number; qs?: str
 
 // Get user by ID
 export const getUserById = (id: string) => {
-  return http.get<UserResponse>(`${BASE_PATH}/${id}`)
+  return http.get<UserApiResponse>(`${BASE_PATH}/${id}`)
 }
 
 // Update user (not password)

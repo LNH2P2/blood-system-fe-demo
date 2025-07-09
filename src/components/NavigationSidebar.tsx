@@ -91,6 +91,14 @@ export default function NavigationSidebar({ sidebarOpen, setSidebarOpen }: Navig
       badge: '12',
       badgeColor: 'default',
       href: '/notifications'
+    },
+    {
+      id: 'management-user',
+      label: 'Quản lý người dùng',
+      icon: Users,
+      badge: '12',
+      badgeColor: 'default',
+      href: '/user-table'
     }
   ]
 
@@ -209,10 +217,10 @@ export default function NavigationSidebar({ sidebarOpen, setSidebarOpen }: Navig
 
               <DropdownMenuContent side='right' align='start' className='w-48'>
                 <DropdownMenuItem asChild>
-                  <Link href='/profile'>👤 Hồ sơ cá nhân</Link>
+                  <Link href={`/vi/profile/${user.sub}`}>👤 Hồ sơ cá nhân</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href='/change-password'>🔒 Đổi mật khẩu</Link>
+                  <Link href={`/vi/change-password/${user.sub}`}>🔒 Đổi mật khẩu</Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
