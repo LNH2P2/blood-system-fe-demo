@@ -14,7 +14,7 @@ interface BlogDetailProps {
 }
 
 export default function BlogDetail({ blog, isOpen, onClose }: BlogDetailProps) {
-  const getStatusColor = (status: BlogStatus) => {
+  const getStatusColor = (status: BlogStatus = BlogStatus.DRAFT) => {
     switch (status) {
       case BlogStatus.PUBLISHED:
         return 'bg-green-100 text-green-800 border-green-300'
@@ -27,7 +27,7 @@ export default function BlogDetail({ blog, isOpen, onClose }: BlogDetailProps) {
     }
   }
 
-  const getStatusBadge = (status: BlogStatus) => {
+  const getStatusBadge = (status: BlogStatus = BlogStatus.DRAFT) => {
     switch (status) {
       case BlogStatus.PUBLISHED:
         return 'default'
@@ -40,7 +40,7 @@ export default function BlogDetail({ blog, isOpen, onClose }: BlogDetailProps) {
     }
   }
 
-  const getStatusIcon = (status: BlogStatus) => {
+  const getStatusIcon = (status: BlogStatus = BlogStatus.DRAFT) => {
     switch (status) {
       case BlogStatus.PUBLISHED:
         return <CheckCircle className='h-5 w-5 text-green-600' />
@@ -68,6 +68,8 @@ export default function BlogDetail({ blog, isOpen, onClose }: BlogDetailProps) {
     return content.substring(0, maxLength) + '...'
   }
 
+  const currentStatus = blog.status || BlogStatus.DRAFT
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
@@ -94,14 +96,6 @@ export default function BlogDetail({ blog, isOpen, onClose }: BlogDetailProps) {
                   </DialogDescription>
                 </div>
               </div>
-              <Button
-                variant='ghost'
-                size='sm'
-                onClick={onClose}
-                className='text-white hover:bg-white/20 p-2 flex-shrink-0'
-              >
-                <X className='h-5 w-5' />
-              </Button>
             </div>
           </DialogHeader>
         </div>
@@ -115,24 +109,20 @@ export default function BlogDetail({ blog, isOpen, onClose }: BlogDetailProps) {
               <Card className='shadow-sm'>
                 <CardHeader className='pb-3'>
                   <CardTitle className='flex items-center space-x-2 text-lg'>
-                    {getStatusIcon(blog.status)}
+                    {getStatusIcon(currentStatus)}
                     <span>Thông tin trạng thái</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className='space-y-4'>
                   <div className='flex flex-wrap items-center gap-3'>
                     <Badge
-                      variant={getStatusBadge(blog.status)}
+                      variant={getStatusBadge(currentStatus)}
                       className={`font-semibold text-sm md:text-base px-3 py-1 md:px-4 md:py-2 ${getStatusColor(
-                        blog.status
+                        currentStatus
                       )}`}
                     >
-                      {blog.status}
+                      {currentStatus}
                     </Badge>
-                    <div className='flex items-center space-x-2 text-sm text-gray-600'>
-                      <Eye className='h-4 w-4 text-blue-500' />
-                      <span>{blog.viewCount} lượt xem</span>
-                    </div>
                   </div>
 
                   <div className='grid grid-cols-1 md:grid-cols-2 gap-4 text-sm'>
@@ -227,14 +217,6 @@ export default function BlogDetail({ blog, isOpen, onClose }: BlogDetailProps) {
                 </CardHeader>
                 <CardContent className='space-y-4'>
                   <div className='space-y-3'>
-                    <div className='flex justify-between items-center p-3 bg-blue-50 rounded-lg'>
-                      <div className='flex items-center space-x-2'>
-                        <Eye className='h-4 w-4 text-blue-600' />
-                        <span className='text-sm font-medium text-blue-900'>Lượt xem</span>
-                      </div>
-                      <span className='text-lg font-bold text-blue-900'>{blog.viewCount}</span>
-                    </div>
-
                     <div className='flex justify-between items-center p-3 bg-green-50 rounded-lg'>
                       <div className='flex items-center space-x-2'>
                         <FileText className='h-4 w-4 text-green-600' />
@@ -257,14 +239,14 @@ export default function BlogDetail({ blog, isOpen, onClose }: BlogDetailProps) {
                     Chỉnh sửa bài viết
                   </Button>
 
-                  {blog.status === BlogStatus.DRAFT && (
+                  {currentStatus === BlogStatus.DRAFT && (
                     <Button className='w-full bg-green-600 hover:bg-green-700'>
                       <CheckCircle className='h-4 w-4 mr-2' />
                       Xuất bản ngay
                     </Button>
                   )}
 
-                  {blog.status === BlogStatus.PUBLISHED && (
+                  {currentStatus === BlogStatus.PUBLISHED && (
                     <Button className='w-full bg-orange-600 hover:bg-orange-700'>
                       <Archive className='h-4 w-4 mr-2' />
                       Lưu trữ bài viết
@@ -291,32 +273,32 @@ export default function BlogDetail({ blog, isOpen, onClose }: BlogDetailProps) {
                 <CardContent>
                   <div
                     className={`p-4 rounded-lg border-l-4 ${
-                      blog.status === BlogStatus.PUBLISHED
+                      currentStatus === BlogStatus.PUBLISHED
                         ? 'border-green-500 bg-green-50'
-                        : blog.status === BlogStatus.DRAFT
+                        : currentStatus === BlogStatus.DRAFT
                         ? 'border-yellow-500 bg-yellow-50'
                         : 'border-gray-500 bg-gray-50'
                     }`}
                   >
                     <div className='flex items-center space-x-2 mb-2'>
-                      {getStatusIcon(blog.status)}
+                      {getStatusIcon(currentStatus)}
                       <h4
                         className={`font-medium ${
-                          blog.status === BlogStatus.PUBLISHED
+                          currentStatus === BlogStatus.PUBLISHED
                             ? 'text-green-800'
-                            : blog.status === BlogStatus.DRAFT
+                            : currentStatus === BlogStatus.DRAFT
                             ? 'text-yellow-800'
                             : 'text-gray-800'
                         }`}
                       >
-                        {blog.status}
+                        {currentStatus}
                       </h4>
                     </div>
                     <p className='text-sm text-gray-600'>
-                      {blog.status === BlogStatus.PUBLISHED &&
+                      {currentStatus === BlogStatus.PUBLISHED &&
                         'Bài viết này đang hiển thị công khai và có thể được người dùng xem.'}
-                      {blog.status === BlogStatus.DRAFT && 'Bài viết này chưa được xuất bản và chỉ admin có thể xem.'}
-                      {blog.status === BlogStatus.ARCHIVED && 'Bài viết này đã bị ẩn khỏi danh sách công khai.'}
+                      {currentStatus === BlogStatus.DRAFT && 'Bài viết này chưa được xuất bản và chỉ admin có thể xem.'}
+                      {currentStatus === BlogStatus.ARCHIVED && 'Bài viết này đã bị ẩn khỏi danh sách công khai.'}
                     </p>
                   </div>
                 </CardContent>

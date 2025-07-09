@@ -10,13 +10,13 @@ export default function BlogPageView() {
   const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState<BlogFilters>({
     page: 1,
-    limit: 10
+    limit: 5
   })
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
     totalRecords: 0,
-    limit: 10
+    limit: 5
   })
 
   useEffect(() => {
@@ -28,7 +28,6 @@ export default function BlogPageView() {
       setLoading(true)
 
       const response = await blogApi.getBlogs(filters)
-      console.log('response of fetching blogs in BlogPageView is: ', response)
 
       if (response.payload?.data) {
         setBlogs(response.payload.data)
@@ -66,6 +65,7 @@ export default function BlogPageView() {
   return (
     <BlogContent
       blogs={blogs}
+      setBlogs={setBlogs}
       onRefresh={handleRefresh}
       onFiltersChange={handleFiltersChange}
       loading={loading}

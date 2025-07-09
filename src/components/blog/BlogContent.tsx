@@ -6,6 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from '@/components/ui/dialog'
+import {
   FileText,
   Eye,
   Calendar,
@@ -16,7 +24,8 @@ import {
   Archive,
   Search,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  AlertTriangle
 } from 'lucide-react'
 import { Blog, BlogStatus, BlogFilters } from '@/types/blog'
 import { blogApi } from '@/lib/apis/blog.api'
@@ -25,6 +34,7 @@ import BlogDetail from './BlogDetail'
 
 interface BlogContentProps {
   blogs: Blog[]
+  setBlogs: (blogs: Blog[]) => void
   onRefresh: () => void
   onFiltersChange: (filters: BlogFilters) => void
   loading: boolean
@@ -36,11 +46,21 @@ interface BlogContentProps {
   }
 }
 
-export default function BlogContent({ blogs, onRefresh, onFiltersChange, loading, pagination }: BlogContentProps) {
+export default function BlogContent({
+  blogs,
+  setBlogs,
+  onRefresh,
+  onFiltersChange,
+  loading,
+  pagination
+}: BlogContentProps) {
   const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null)
   const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingBlog, setEditingBlog] = useState<Blog | null>(null)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [blogToDelete, setBlogToDelete] = useState<Blog | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const handleViewDetail = (blog: Blog) => {
     setSelectedBlog(blog)
@@ -72,17 +92,31 @@ export default function BlogContent({ blogs, onRefresh, onFiltersChange, loading
     onRefresh()
   }
 
-  const handleDelete = async (blog: Blog) => {
-    if (window.confirm(`Bạn có chắc chắn muốn xóa blog "${blog.title}"?`)) {
-      try {
-        // TODO: Replace with actual API call when backend is ready
-        // await blogApi.deleteBlog(blog._id)
-        console.log('Mock: Deleting blog:', blog.title)
-        alert('Xóa thành công! (Mock action)')
-        onRefresh()
-      } catch (error) {
-        console.error('Error deleting blog:', error)
-      }
+  const handleDeleteClick = (blog: Blog) => {
+    setBlogToDelete(blog)
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleDeleteCancel = () => {
+    setIsDeleteModalOpen(false)
+    setBlogToDelete(null)
+    setIsDeleting(false)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!blogToDelete) return
+
+    try {
+      setIsDeleting(true)
+      await blogApi.deleteBlog(blogToDelete._id)
+
+      setIsDeleteModalOpen(false)
+      setBlogToDelete(null)
+      setBlogs(blogs.filter((blog) => blog._id !== blogToDelete._id))
+    } catch (error) {
+      console.error('Error deleting blog:', error)
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -347,9 +381,9 @@ export default function BlogContent({ blogs, onRefresh, onFiltersChange, loading
                       variant='outline'
                       size='sm'
                       className='border-red-300 text-red-700 hover:bg-red-50'
-                      onClick={() => handleDelete(blog)}
+                      onClick={() => handleDeleteClick(blog)}
                     >
-                      <Trash2 className='h-4 w-4 mr-2' />
+                      <Trash2 className='h-4 w-4' />
                       Xóa
                     </Button>
                   </div>
@@ -376,8 +410,8 @@ export default function BlogContent({ blogs, onRefresh, onFiltersChange, loading
             <div className='flex items-center justify-between'>
               <div className='text-sm text-gray-600'>
                 Hiển thị {(pagination.currentPage - 1) * pagination.limit + 1} -{' '}
-                {Math.min(pagination.currentPage * pagination.limit, pagination.totalRecords)}
-                của {pagination.totalRecords} bài viết
+                {Math.min(pagination.currentPage * pagination.limit, pagination.totalRecords)} của{' '}
+                {pagination.totalRecords} bài viết
               </div>
               <div className='flex items-center space-x-2'>
                 <Button
@@ -437,6 +471,59 @@ export default function BlogContent({ blogs, onRefresh, onFiltersChange, loading
           </div>
         )}
       </Card>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <DialogContent className='sm:max-w-md'>
+          <DialogHeader>
+            <div className='flex items-center space-x-3'>
+              <div className='bg-red-100 p-2 rounded-full'>
+                <AlertTriangle className='h-6 w-6 text-red-600' />
+              </div>
+              <div>
+                <DialogTitle className='text-xl font-semibold text-gray-900'>Xác nhận xóa bài viết</DialogTitle>
+                <DialogDescription className='text-gray-600 mt-1'>Hành động này không thể hoàn tác</DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className='py-4'>
+            <div className='bg-red-50 border border-red-200 rounded-lg p-4'>
+              <p className='text-sm text-gray-700 mb-2'>Bạn có chắc chắn muốn xóa bài viết này không?</p>
+              <div className='bg-white border border-red-200 rounded p-3'>
+                <p className='font-medium text-gray-900'>{blogToDelete?.title}</p>
+                <p className='text-sm text-gray-600 mt-1 line-clamp-2'>{blogToDelete?.summary}</p>
+              </div>
+              <p className='text-sm text-red-600 mt-3 font-medium'>
+                ⚠️ Sau khi xóa, bài viết sẽ bị mất vĩnh viễn và không thể khôi phục.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className='flex justify-end space-x-3'>
+            <Button variant='outline' onClick={handleDeleteCancel} disabled={isDeleting} className='px-6'>
+              Hủy bỏ
+            </Button>
+            <Button
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className='px-6 bg-red-600 hover:bg-red-700 focus:ring-red-500'
+            >
+              {isDeleting ? (
+                <div className='flex items-center space-x-2'>
+                  <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-white'></div>
+                  <span>Đang xóa...</span>
+                </div>
+              ) : (
+                <div className='flex items-center space-x-2'>
+                  <Trash2 className='h-4 w-4' />
+                  <span>Xóa bài viết</span>
+                </div>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Blog Detail Modal */}
       {selectedBlog && <BlogDetail blog={selectedBlog} isOpen={isDetailOpen} onClose={handleCloseDetail} />}
