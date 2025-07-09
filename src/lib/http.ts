@@ -122,6 +122,7 @@ const request = async <Response>(
         } catch (err) {
           isRefreshing = false
           localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
           window.location.href = '/vi/login'
           throw err
         }

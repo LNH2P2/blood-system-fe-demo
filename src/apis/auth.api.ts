@@ -1,13 +1,13 @@
 import http from '@/lib/http'
 import {
-  CreateUserDto,
+  ChangePasswordDto,
   LoginDto,
   LoginResponse,
-  ChangePasswordDto,
+  RefreshResponse,
   ResetPasswordDto,
-  VerifyOtpDto,
-  RefreshResponse
-} from '@/types/auth' // cập nhật đường dẫn đúng nếu cần
+  VerifyOtpDto
+} from '@/types/auth'
+import { CreateUserDto } from '@/types/user'
 
 const BASE_PATH = '/auth'
 
