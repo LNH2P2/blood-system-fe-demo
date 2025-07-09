@@ -37,37 +37,61 @@ export class EntityError extends HttpError {
   }
 }
 
+let isRefreshing = false
+let refreshSubscribers: ((token: string) => void)[] = []
+
+function subscribeTokenRefresh(cb: (token: string) => void) {
+  refreshSubscribers.push(cb)
+}
+
+function onRefreshed(newToken: string) {
+  refreshSubscribers.forEach((cb) => cb(newToken))
+  refreshSubscribers = []
+}
+
+async function refreshAccessToken() {
+  try {
+    const res = await fetch(`${env.NEXT_PUBLIC_API_ENDPOINT}/auth/refresh-token`, {
+      method: 'POST',
+      credentials: 'include'
+    })
+    if (!res.ok) throw new Error('Refresh failed')
+    const data = await res.json()
+    if (!data.accessToken || typeof data.accessToken !== 'string') {
+      throw new Error('No access token received')
+    }
+    const newAccessToken = data.accessToken
+    localStorage.setItem('access_token', newAccessToken)
+    return newAccessToken
+  } catch (err) {
+    throw err
+  }
+}
+
 export const isClient = () => typeof window !== 'undefined'
 const request = async <Response>(
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
   url: string,
-  options?: CustomOptions | undefined
-) => {
+  options?: CustomOptions | undefined,
+  retry = true
+): Promise<{ status: number; payload: Response }> => {
   let body: FormData | string | undefined = undefined
   if (options?.body instanceof FormData) {
     body = options.body
   } else if (options?.body) {
     body = JSON.stringify(options.body)
   }
-  const baseHeaders: {
-    [key: string]: string
-  } =
-    body instanceof FormData
-      ? {}
-      : {
-          'Content-Type': 'application/json'
-        }
+
+  const baseHeaders: Record<string, string> = body instanceof FormData ? {} : { 'Content-Type': 'application/json' }
+
   if (isClient()) {
-    const sessionToken = localStorage.getItem('sessionToken')
-    if (sessionToken) {
-      baseHeaders.Authorization = `Bearer ${sessionToken}`
+    const access_token = localStorage.getItem('access_token')
+    if (access_token) {
+      baseHeaders.Authorization = `Bearer ${access_token}`
     }
   }
-  // Nếu không truyền baseUrl (hoặc baseUrl = undefined) thì lấy từ envClientConfig.NEXT_PUBLIC_API_ENDPOINT
-  // Nếu truyền baseUrl thì lấy giá trị truyền vào, truyền vào '' thì đồng nghĩa với việc chúng ta gọi API đến Next.js Server
 
   const baseUrl = options?.baseUrl === undefined ? env.NEXT_PUBLIC_API_ENDPOINT : options.baseUrl
-
   const fullUrl = url.startsWith('/') ? `${baseUrl}${url}` : `${baseUrl}/${url}`
 
   const res = await fetch(fullUrl, {
@@ -79,27 +103,46 @@ const request = async <Response>(
     body,
     method
   })
+
   const payload: Response = await res.json()
-  const data = {
-    status: res.status,
-    payload
-  }
-  // Interceptor for error
+  const data = { status: res.status, payload }
+
   if (!res.ok) {
     if (res.status === ENTITY_ERROR_STATUS) {
-      throw new EntityError(
-        data as {
-          status: 422
-          payload: EntityErrorPayload
-        }
-      )
-    } else {
-      throw new HttpError(data)
+      throw new EntityError(data as { status: 422; payload: EntityErrorPayload })
     }
+
+    if (res.status === 401 && retry && isClient()) {
+      if (!isRefreshing) {
+        isRefreshing = true
+        try {
+          const newToken = await refreshAccessToken()
+          onRefreshed(newToken)
+          isRefreshing = false
+        } catch (err) {
+          isRefreshing = false
+          localStorage.removeItem('access_token')
+          window.location.href = '/vi/login'
+          throw err
+        }
+      }
+
+      return new Promise((resolve, reject) => {
+        subscribeTokenRefresh((newToken: string) => {
+          options = options || {}
+          options.headers = {
+            ...options.headers,
+            Authorization: `Bearer ${newToken}`
+          }
+
+          request<Response>(method, url, options, false).then(resolve).catch(reject)
+        })
+      })
+    }
+
+    throw new HttpError(data)
   }
-  // Make sure logic only run on client (handle path redirect, toast, etc)
-  if (isClient()) {
-  }
+
   return data
 }
 

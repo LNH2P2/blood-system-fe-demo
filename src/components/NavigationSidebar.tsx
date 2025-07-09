@@ -1,27 +1,26 @@
 'use client'
 
-import { useRouter, usePathname } from '../i18n/navigation'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { useAuthContext } from '@/contexts/auth-context'
 import {
-  Heart,
-  Users,
-  Calendar,
-  Bell,
-  Settings,
   BarChart3,
-  Menu,
-  X,
-  Home,
-  Droplets,
-  UserPlus,
+  Bell,
+  Calendar,
   ClipboardList,
+  Droplets,
+  Heart,
   HelpCircle,
+  Home,
   LogOut,
+  Menu,
+  Settings,
   User,
-  Hospital
+  Hospitals,
+  X
 } from 'lucide-react'
+import { usePathname, useRouter } from '../i18n/navigation'
 
 interface MenuItem {
   id: string
@@ -40,7 +39,7 @@ interface NavigationSidebarProps {
 export default function NavigationSidebar({ sidebarOpen, setSidebarOpen }: NavigationSidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
-
+  const { user, logout } = useAuthContext()
   const menuItems: MenuItem[] = [
     {
       id: 'dashboard',
@@ -122,6 +121,10 @@ export default function NavigationSidebar({ sidebarOpen, setSidebarOpen }: Navig
     return pathname === href || pathname.endsWith(href)
   }
 
+  const handleLogout = () => {
+    logout()
+    router.push('/vi/login')
+  }
   return (
     <div
       className={`${
@@ -185,23 +188,27 @@ export default function NavigationSidebar({ sidebarOpen, setSidebarOpen }: Navig
         ))}
 
         {/* User Profile */}
-        <Separator className='my-4' />
-        <div className={`flex items-center space-x-3 px-3 py-2 ${!sidebarOpen && 'justify-center'}`}>
-          <div className='w-8 h-8 bg-red-100 rounded-full flex items-center justify-center'>
-            <User className='h-4 w-4 text-red-600' />
-          </div>
-          {sidebarOpen && (
-            <div className='flex-1'>
-              <p className='text-sm font-medium'>Admin User</p>
-              <p className='text-xs text-muted-foreground'>admin@bloodcare.com</p>
+        {user && (
+          <>
+            <Separator className='my-4' />
+            <div className={`flex items-center space-x-3 px-3 py-2 ${!sidebarOpen && 'justify-center'}`}>
+              <div className='w-8 h-8 bg-red-100 rounded-full flex items-center justify-center'>
+                <User className='h-4 w-4 text-red-600' />
+              </div>
+              {sidebarOpen && (
+                <div className='flex-1'>
+                  <p className='text-sm font-medium'>{user.username || 'Người dùng'}</p>
+                  <p className='text-xs text-muted-foreground'>{user.email}</p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-        {sidebarOpen && (
-          <Button variant='ghost' className='w-full justify-start text-muted-foreground'>
-            <LogOut className='h-4 w-4' />
-            <span className='ml-3'>Đăng xuất</span>
-          </Button>
+            {sidebarOpen && (
+              <Button variant='ghost' className='w-full justify-start text-muted-foreground' onClick={handleLogout}>
+                <LogOut className='h-4 w-4' />
+                <span className='ml-3'>Đăng xuất</span>
+              </Button>
+            )}
+          </>
         )}
       </div>
     </div>

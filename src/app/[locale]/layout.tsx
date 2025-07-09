@@ -1,11 +1,13 @@
+import { AuthProvider } from '@/contexts/auth-context'
+import { ReactQueryProvider } from '@/lib/query-client'
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import './globals.css'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
+import { Geist, Geist_Mono } from 'next/font/google'
 import { notFound } from 'next/navigation'
-import QueryProvider from '@/components/providers/query-provider'
 import { Toaster } from '@/components/ui/sonner'
 import { routing } from '../../i18n/routing'
+import './globals.css'
+import { GlobalStorageListener } from '@/contexts/global-storage'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -37,10 +39,13 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <NextIntlClientProvider>
-          <QueryProvider>{children}</QueryProvider>
-          <Toaster />
-        </NextIntlClientProvider>
+        <Toaster />
+        <GlobalStorageListener />
+        <AuthProvider>
+          <NextIntlClientProvider>
+            <ReactQueryProvider>{children}</ReactQueryProvider>
+          </NextIntlClientProvider>
+        </AuthProvider>
       </body>
     </html>
   )
