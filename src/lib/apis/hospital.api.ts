@@ -1,16 +1,13 @@
 import { Hospital, CreateHospitalDto, UpdateHospitalDto, HospitalQueryDto } from '@/types/hospital';
-import http from '@/lib/http';
+import http from '../http';
 
 const BASE_URL = '/hospitals';
 
-// The backend response for paginated data might be different.
-// Adjust this interface based on the actual API response structure.
 interface PaginatedHospitalsResponse {
   data: Hospital[];
   total: number;
   page: number;
   limit: number;
-  // Add any other pagination fields from your backend response
 }
 
 export const hospitalApi = {
@@ -38,7 +35,7 @@ export const hospitalApi = {
   },
 
   async updateHospital(id: string, data: UpdateHospitalDto): Promise<Hospital> {
-    const response = await http.patch<Hospital>(`${BASE_URL}/${id}`, data);
+    const response = await http.put<Hospital>(`${BASE_URL}/${id}`, data);
     return response.payload;
   },
 
