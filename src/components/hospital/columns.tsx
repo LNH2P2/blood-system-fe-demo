@@ -2,6 +2,12 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 import { Hospital } from '@/types/hospital';
+
+interface GetColumnsProps {
+  onEdit: (hospital: Hospital) => void;
+  onDelete: (hospital: Hospital) => void;
+}
+
 import { MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +23,7 @@ import {
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
 
-export const columns: ColumnDef<Hospital>[] = [
+export const getColumns = ({ onEdit, onDelete }: GetColumnsProps): ColumnDef<Hospital>[] => [
   {
     accessorKey: 'name',
     header: 'Name',
@@ -65,8 +71,8 @@ export const columns: ColumnDef<Hospital>[] = [
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>View details</DropdownMenuItem>
-            <DropdownMenuItem>Edit hospital</DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600">Delete hospital</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onEdit(hospital)}>Edit hospital</DropdownMenuItem>
+                        <DropdownMenuItem className="text-red-600" onClick={() => onDelete(hospital)}>Delete hospital</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
