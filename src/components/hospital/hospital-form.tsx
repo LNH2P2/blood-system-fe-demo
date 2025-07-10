@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/select';
 import { addressApi } from '@/lib/apis/address.api';
 import { District, Province, Ward } from '@/types/address';
-import { CreateHospitalDto, Hospital } from '@/types/hospital';
+import { CreateHospitalDto, Hospital, UpdateHospitalDto } from '@/types/hospital';
 
 // Zod schema for validation
 const hospitalFormSchema = z.object({
@@ -53,7 +53,7 @@ type HospitalFormValues = z.infer<typeof hospitalFormSchema>;
 
 interface HospitalFormProps {
   hospital?: Hospital;
-  onSubmit: (data: CreateHospitalDto) => void;
+  onSubmit: (data: CreateHospitalDto | UpdateHospitalDto) => void;
   isSubmitting: boolean;
 }
 
@@ -76,7 +76,10 @@ export function HospitalForm({ hospital, onSubmit, isSubmitting }: HospitalFormP
       description: hospital?.description || '',
       emergencyContact: hospital?.emergencyContact || '',
       services: hospital?.services?.join(', ') || '',
-
+      coordinates: {
+        latitude: hospital?.coordinates?.latitude || 0,
+        longitude: hospital?.coordinates?.longitude || 0,
+      },
     },
   });
 
@@ -84,33 +87,59 @@ export function HospitalForm({ hospital, onSubmit, isSubmitting }: HospitalFormP
   const [districts, setDistricts] = useState<District[]>([]);
   const [wards, setWards] = useState<Ward[]>([]);
 
-  const selectedProvinceCode = provinces.find(p => p.name === form.watch('province'))?.code;
-  const selectedDistrictCode = districts.find(d => d.name === form.watch('district'))?.code;
+  const selectedProvinceName = form.watch('province');
+  const selectedDistrictName = form.watch('district');
 
-  const [isGeocoding, setIsGeocoding] = useState(false);
-  const coordinates = form.watch('coordinates');
+  const selectedProvinceCode = provinces.find(p => p.name === selectedProvinceName)?.code;
+  const selectedDistrictCode = districts.find(d => d.name === selectedDistrictName)?.code;
+
 
   useEffect(() => {
     addressApi.getProvinces().then(setProvinces);
   }, []);
 
+  // Handle district loading and form reset
   useEffect(() => {
+    const isInitialLoad = !districts.length && hospital?.district;
     if (selectedProvinceCode) {
-      addressApi.getDistricts(selectedProvinceCode).then(setDistricts);
+      addressApi.getDistricts(selectedProvinceCode).then(districtsData => {
+        setDistricts(districtsData);
+        // If not initial load, reset district and ward
+        if (!isInitialLoad) {
+          form.setValue('district', '');
+          form.setValue('ward', '');
+          setWards([]);
+        }
+      });
     } else {
       setDistricts([]);
-    }
-    form.setValue('district', '');
-  }, [selectedProvinceCode, form]);
-
-  useEffect(() => {
-    if (selectedDistrictCode) {
-      addressApi.getWards(selectedDistrictCode).then(setWards);
-    } else {
       setWards([]);
+      if (!isInitialLoad) {
+         form.setValue('district', '');
+         form.setValue('ward', '');
+      }
     }
-    form.setValue('ward', '');
-  }, [selectedDistrictCode, form]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedProvinceCode, hospital?.district]);
+
+  // Handle ward loading and form reset
+  useEffect(() => {
+    const isInitialLoad = !wards.length && hospital?.ward;
+    if (selectedDistrictCode) {
+      addressApi.getWards(selectedDistrictCode).then(wardsData => {
+        setWards(wardsData);
+        if (!isInitialLoad) {
+          form.setValue('ward', '');
+        }
+      });
+    } else {
+        setWards([]);
+        if (!isInitialLoad) {
+            form.setValue('ward', '');
+        }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDistrictCode, hospital?.ward]);
 
   function handleSubmit(values: HospitalFormValues) {
     const dataToSubmit = {
@@ -122,7 +151,7 @@ export function HospitalForm({ hospital, onSubmit, isSubmitting }: HospitalFormP
         longitude: 105.8342,
       },
     };
-    onSubmit(dataToSubmit as unknown as CreateHospitalDto);
+    onSubmit(dataToSubmit);
   }
 
   return (
