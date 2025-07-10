@@ -37,7 +37,7 @@ export default function BlogForm({ blog, isOpen, onClose, onSuccess }: BlogFormP
         image: blog.image,
         summary: blog.summary,
         content: blog.content,
-        status: blog.status
+        status: blog.status ?? BlogStatus.DRAFT
       })
     } else {
       setFormData({
@@ -103,15 +103,15 @@ export default function BlogForm({ blog, isOpen, onClose, onSuccess }: BlogFormP
       } else {
         const createData: CreateBlogDto = {
           title: formData.title,
-          image: formData.image || 'https://via.placeholder.com/600x400/e5e7eb/6b7280?text=Blog+Image',
+          image:
+            formData.image ||
+            'https://media.istockphoto.com/id/1409329028/vector/no-picture-available-placeholder-thumbnail-icon-illustration-design.jpg?s=612x612&w=0&k=20&c=_zOuJu755g2eEUioiOUdz_mHKJQJn-tDgIAhQzyeKUQ=',
           summary: formData.summary,
           content: formData.content,
           status: formData.status
         }
-        // TODO: Replace with actual API call when backend is ready
-        // await blogApi.createBlog(createData)
-        console.log('Mock: Creating blog:', createData)
-        alert(`Tạo blog thành công! (Mock action)\nTitle: ${formData.title}`)
+        const response = await blogApi.createBlog(createData)
+        console.log('response of creating blog in BlogForm is: ', response)
       }
 
       onSuccess()
@@ -177,9 +177,6 @@ export default function BlogForm({ blog, isOpen, onClose, onSuccess }: BlogFormP
                   </DialogDescription>
                 </div>
               </div>
-              <Button variant='ghost' size='sm' onClick={onClose} className='text-white hover:bg-white/20 p-2'>
-                <X className='h-5 w-5' />
-              </Button>
             </div>
           </DialogHeader>
         </div>

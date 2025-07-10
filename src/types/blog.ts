@@ -23,7 +23,6 @@ export interface CreateBlogDto {
   summary: string
   content: string
   status: BlogStatus
-  category?: string
 }
 
 export interface UpdateBlogDto {
