@@ -1,10 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { hospitalApi } from '@/lib/services/hospital.api'
-import { columns } from './_components/columns'
-import { DataTable } from './_components/data-table'
+import { useGetHospitals, useCreateHospital } from '@/hooks/use-api/use-hospitals'
+import { columns } from '../../../../components/hospital/columns'
+import { DataTable } from '../../../../components/hospital/data-table'
 import { Button } from '@/components/ui/button'
 import { PlusCircle } from 'lucide-react'
 import {
@@ -15,30 +14,16 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog'
-import { HospitalForm } from './_components/hospital-form'
-import { CreateHospitalDto } from '@/lib/types/hospital'
-import { toast } from 'sonner'
+import { HospitalForm } from '../../../../components/hospital/hospital-form'
+import { CreateHospitalDto } from '@/types/hospital'
 
 export default function HospitalsPage() {
-  const queryClient = useQueryClient()
-
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['hospitals'],
-    queryFn: () => hospitalApi.getHospitals()
-  })
+  const { data: hospitalsData, isLoading, error } = useGetHospitals()
 
-  const createHospitalMutation = useMutation({
-    mutationFn: (newHospital: CreateHospitalDto) => hospitalApi.createHospital(newHospital),
-    onSuccess: () => {
-      toast('Success', { description: 'Hospital created successfully.' })
-      queryClient.invalidateQueries({ queryKey: ['hospitals'] })
-      setIsDialogOpen(false)
-    },
-    onError: (err) => {
-      toast('Error', { description: err.message })
-    }
+  const createHospitalMutation = useCreateHospital(() => {
+    setIsDialogOpen(false)
   })
 
   const handleCreateHospital = (data: CreateHospitalDto) => {
@@ -47,7 +32,7 @@ export default function HospitalsPage() {
 
   if (error) return <div>An error occurred: {error.message}</div>
 
-  const hospitals = data?.data || []
+  const hospitals = hospitalsData?.data || []
 
   return (
     <div className='container mx-auto py-10'>
@@ -65,7 +50,10 @@ export default function HospitalsPage() {
               <DialogTitle>Add New Hospital</DialogTitle>
               <DialogDescription>Fill in the details below to add a new hospital.</DialogDescription>
             </DialogHeader>
-            <HospitalForm onSubmit={handleCreateHospital} isSubmitting={createHospitalMutation.isPending} />
+            <HospitalForm
+              onSubmit={handleCreateHospital}
+              isSubmitting={createHospitalMutation.isPending}
+            />
           </DialogContent>
         </Dialog>
       </div>
