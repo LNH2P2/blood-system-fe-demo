@@ -21,7 +21,11 @@ import {
   Users,
   X
 } from 'lucide-react'
+
+import Link from 'next/link'
 import { usePathname, useRouter } from '../i18n/navigation'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
+import Image from 'next/image'
 
 interface MenuItem {
   id: string
@@ -95,6 +99,13 @@ export default function NavigationSidebar({ sidebarOpen, setSidebarOpen }: Navig
       badge: '12',
       badgeColor: 'default',
       href: '/notifications'
+    },
+    {
+      id: 'management-user',
+      label: 'Quản lý người dùng',
+      icon: Users,
+      badgeColor: 'default',
+      href: '/user-table'
     }
   ]
 
@@ -192,19 +203,51 @@ export default function NavigationSidebar({ sidebarOpen, setSidebarOpen }: Navig
         {user && (
           <>
             <Separator className='my-4' />
-            <div className={`flex items-center space-x-3 px-3 py-2 ${!sidebarOpen && 'justify-center'}`}>
-              <div className='w-8 h-8 bg-red-100 rounded-full flex items-center justify-center'>
-                <User className='h-4 w-4 text-red-600' />
-              </div>
-              {sidebarOpen && (
-                <div className='flex-1'>
-                  <p className='text-sm font-medium'>{user.username || 'Người dùng'}</p>
-                  <p className='text-xs text-muted-foreground'>{user.email}</p>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div
+                  className={`flex items-center space-x-3 px-3 py-2 cursor-pointer hover:bg-red-50 rounded-md ${
+                    !sidebarOpen && 'justify-center'
+                  }`}
+                >
+                  {user.image ? (
+                    <Image
+                      src={user.image}
+                      alt='Avatar'
+                      width={32}
+                      height={32}
+                      className='w-8 h-8 rounded-full object-cover'
+                    />
+                  ) : (
+                    <div className='w-8 h-8 bg-red-100 rounded-full flex items-center justify-center'>
+                      <User className='h-4 w-4 text-red-600' />
+                    </div>
+                  )}
+
+                  {sidebarOpen && (
+                    <div className='flex-1'>
+                      <p className='text-sm font-medium'>{user.username || 'Người dùng'}</p>
+                      <p className='text-xs text-muted-foreground'>{user.email}</p>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent side='right' align='start' className='w-48'>
+                <DropdownMenuItem asChild>
+                  <Link href={`/vi/profile/${user.sub}`}>👤 Hồ sơ cá nhân</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/vi/change-password/${user.sub}`}>🔒 Đổi mật khẩu</Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             {sidebarOpen && (
-              <Button variant='ghost' className='w-full justify-start text-muted-foreground' onClick={handleLogout}>
+              <Button
+                variant='ghost'
+                className='w-full justify-start text-muted-foreground cursor-pointer'
+                onClick={handleLogout}
+              >
                 <LogOut className='h-4 w-4' />
                 <span className='ml-3'>Đăng xuất</span>
               </Button>
