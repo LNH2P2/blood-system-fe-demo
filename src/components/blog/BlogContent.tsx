@@ -22,7 +22,6 @@ import {
   Edit,
   Trash2,
   Archive,
-  Search,
   ChevronLeft,
   ChevronRight,
   AlertTriangle
@@ -34,6 +33,12 @@ import BlogDetail from './BlogDetail'
 
 interface BlogContentProps {
   blogs: Blog[]
+  statusCounts: {
+    draft: number
+    published: number
+    archived: number
+    private: number
+  }
   setBlogs: (blogs: Blog[]) => void
   onRefresh: () => void
   onFiltersChange: (filters: BlogFilters) => void
@@ -48,6 +53,7 @@ interface BlogContentProps {
 
 export default function BlogContent({
   blogs,
+  statusCounts,
   setBlogs,
   onRefresh,
   onFiltersChange,
@@ -161,9 +167,9 @@ export default function BlogContent({
   }
 
   const getStats = () => {
-    const published = blogs.filter((b) => b.status === BlogStatus.PUBLISHED).length
-    const draft = blogs.filter((b) => b.status === BlogStatus.DRAFT).length
-    const archived = blogs.filter((b) => b.status === BlogStatus.ARCHIVED).length
+    const published = statusCounts.published
+    const draft = statusCounts.draft
+    const archived = statusCounts.archived
 
     return { published, draft, archived }
   }
@@ -252,7 +258,7 @@ export default function BlogContent({
             </div>
             <div className='text-right'>
               <div className='text-sm text-red-100'>Đã xuất bản</div>
-              <div className='text-2xl font-bold text-green-300'>{stats.published}</div>
+              <div className='text-2xl font-bold text-green-300'>{statusCounts.published}</div>
             </div>
           </div>
         </div>

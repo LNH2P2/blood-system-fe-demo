@@ -37,12 +37,20 @@ export interface UpdateBlogDto {
 export interface BlogListResponse {
   statusCode: number
   message: string
-  data: Blog[]
-  pagination: {
-    limit: number
-    currentPage: number
-    totalRecords: number
-    totalPages: number
+  data: {
+    data: Blog[]
+    pagination: {
+      limit: number
+      currentPage: number
+      totalRecords: number
+      totalPages: number
+    }
+    statusCounts: {
+      draft: number
+      published: number
+      archived: number
+      private: number
+    }
   }
 }
 

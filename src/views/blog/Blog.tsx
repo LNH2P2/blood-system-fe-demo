@@ -8,6 +8,17 @@ import BlogContent from '@/components/blog/BlogContent'
 export default function BlogPageView() {
   const [blogs, setBlogs] = useState<Blog[]>([])
   const [loading, setLoading] = useState(true)
+  const [statusCounts, setStatusCounts] = useState<{
+    draft: number
+    published: number
+    archived: number
+    private: number
+  }>({
+    draft: 0,
+    published: 0,
+    archived: 0,
+    private: 0
+  })
   const [filters, setFilters] = useState<BlogFilters>({
     page: 1,
     limit: 5
@@ -26,12 +37,12 @@ export default function BlogPageView() {
   const loadBlogs = async () => {
     try {
       setLoading(true)
-
       const response = await blogApi.getBlogs(filters)
-
       if (response.payload?.data) {
-        setBlogs(response.payload.data)
-        setPagination(response.payload.pagination)
+        setBlogs(response.payload.data.data)
+        setPagination(response.payload.data.pagination)
+        const newStatusCounts = response.payload.data.statusCounts
+        setStatusCounts(newStatusCounts)
       }
     } catch (error) {
       console.error('Error loading blogs:', error)
@@ -65,6 +76,7 @@ export default function BlogPageView() {
   return (
     <BlogContent
       blogs={blogs}
+      statusCounts={statusCounts}
       setBlogs={setBlogs}
       onRefresh={handleRefresh}
       onFiltersChange={handleFiltersChange}
