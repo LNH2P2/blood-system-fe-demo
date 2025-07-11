@@ -113,6 +113,7 @@ export default function BlogContent({
       setIsDeleteModalOpen(false)
       setBlogToDelete(null)
       setBlogs(blogs.filter((blog) => blog._id !== blogToDelete._id))
+      onRefresh()
     } catch (error) {
       console.error('Error deleting blog:', error)
     } finally {
@@ -122,10 +123,7 @@ export default function BlogContent({
 
   const handleStatusChange = async (blog: Blog, newStatus: BlogStatus) => {
     try {
-      // TODO: Replace with actual API call when backend is ready
-      // await blogApi.updateBlog(blog._id, { status: newStatus })
-      console.log('Mock: Updating blog status:', blog.title, 'to', newStatus)
-      alert(`Cập nhật trạng thái thành công! (Mock action)\nBlog: ${blog.title}\nTrạng thái mới: ${newStatus}`)
+      await blogApi.updateBlog(blog._id, { status: newStatus })
       onRefresh()
     } catch (error) {
       console.error('Error updating blog status:', error)

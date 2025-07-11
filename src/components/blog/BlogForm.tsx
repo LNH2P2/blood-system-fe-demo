@@ -96,10 +96,7 @@ export default function BlogForm({ blog, isOpen, onClose, onSuccess }: BlogFormP
           content: formData.content,
           status: formData.status
         }
-        // TODO: Replace with actual API call when backend is ready
-        // await blogApi.updateBlog(blog._id, updateData)
-        console.log('Mock: Updating blog:', blog.title, updateData)
-        alert(`Cập nhật blog thành công! (Mock action)\nTitle: ${formData.title}`)
+        await blogApi.updateBlog(blog._id, updateData)
       } else {
         const createData: CreateBlogDto = {
           title: formData.title,
