@@ -51,6 +51,7 @@ export interface BlogListResponse {
       archived: number
       private: number
     }
+    latestUpdatedAt: string
   }
 }
 

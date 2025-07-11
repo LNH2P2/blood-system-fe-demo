@@ -39,6 +39,7 @@ interface BlogContentProps {
     archived: number
     private: number
   }
+  latestUpdatedAt: string | null
   setBlogs: (blogs: Blog[]) => void
   onRefresh: () => void
   onFiltersChange: (filters: BlogFilters) => void
@@ -54,6 +55,7 @@ interface BlogContentProps {
 export default function BlogContent({
   blogs,
   statusCounts,
+  latestUpdatedAt,
   setBlogs,
   onRefresh,
   onFiltersChange,
@@ -245,11 +247,15 @@ export default function BlogContent({
             <div className='text-right'>
               <div className='text-sm text-red-100'>Cập nhật lần cuối</div>
               <div className='text-lg font-semibold'>
-                {new Date().toLocaleTimeString('vi-VN', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  second: '2-digit'
-                })}
+                {latestUpdatedAt
+                  ? new Date(latestUpdatedAt).toLocaleString('vi-VN', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })
+                  : 'Chưa có cập nhật'}
               </div>
             </div>
             <div className='text-right'>

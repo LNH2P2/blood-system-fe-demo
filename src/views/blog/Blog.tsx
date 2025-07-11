@@ -19,6 +19,7 @@ export default function BlogPageView() {
     archived: 0,
     private: 0
   })
+  const [latestUpdatedAt, setLatestUpdatedAt] = useState<string | null>(null)
   const [filters, setFilters] = useState<BlogFilters>({
     page: 1,
     limit: 5
@@ -43,6 +44,7 @@ export default function BlogPageView() {
         setPagination(response.payload.data.pagination)
         const newStatusCounts = response.payload.data.statusCounts
         setStatusCounts(newStatusCounts)
+        setLatestUpdatedAt(response.payload.data.latestUpdatedAt)
       }
     } catch (error) {
       console.error('Error loading blogs:', error)
@@ -77,6 +79,7 @@ export default function BlogPageView() {
     <BlogContent
       blogs={blogs}
       statusCounts={statusCounts}
+      latestUpdatedAt={latestUpdatedAt}
       setBlogs={setBlogs}
       onRefresh={handleRefresh}
       onFiltersChange={handleFiltersChange}
