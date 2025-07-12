@@ -93,54 +93,156 @@ export default function RequestDetail({ request, isOpen, onClose }: RequestDetai
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className='overflow-hidden p-0 flex flex-col max-w-lg w-full rounded-xl shadow-xl'
-        style={{ maxWidth: '95vw' }}
+        className='overflow-hidden p-0 flex flex-col max-w-lg w-full rounded-2xl shadow-xl border bg-white'
+        style={{ maxWidth: '75vw' }}
       >
         {/* Header */}
-        <div className='bg-gradient-to-r from-red-600 to-red-700 text-white p-5 flex items-center gap-4 rounded-t-xl'>
-          <Hospital className='h-10 w-10 text-white bg-white/20 rounded-full p-2' />
-          <div className='flex-1'>
-            <h2 className='text-2xl font-bold text-white'>{request.hospital || 'Tên bệnh viện'}</h2>
-            <div className='text-red-100 text-sm mt-1'>Thời gian yêu cầu: {request.time}</div>
+        <div className='bg-gradient-to-r from-red-600 to-red-700 text-white p-6 flex flex-col md:flex-row md:items-center gap-4 rounded-t-2xl shadow relative border-b border-red-200'>
+          <div className='flex items-center gap-5'>
+            <div className='bg-white/30 rounded-full p-4 shadow-lg flex items-center justify-center'>
+              <Hospital className='h-14 w-14 text-white drop-shadow' />
+            </div>
+            <div>
+              <h2 className='text-3xl font-extrabold text-white tracking-tight'>
+                {request.hospital || 'Tên bệnh viện'}
+              </h2>
+              <div className='text-red-100 text-sm mt-2 flex items-center gap-2'>
+                <Clock className='h-4 w-4' />
+                {request.time}
+              </div>
+            </div>
           </div>
-          <Badge className={`ml-auto font-semibold border ${getStatusBadgeColor(request.status)}`}>
-            {getStatusText(request.status)}
-          </Badge>
+          <div className='flex md:flex-col md:items-end items-center gap-2 md:ml-auto'>
+            <Badge
+              className={`flex items-center gap-1 font-semibold border text-base px-3 py-1.5 ${getStatusBadgeColor(
+                request.status
+              )}`}
+            >
+              <Activity className='h-4 w-4 mr-1' />
+              {getStatusText(request.status)}
+            </Badge>
+            <Badge
+              className={`flex items-center gap-1 font-semibold border text-base px-3 py-1.5 ${getPriorityBadge(
+                request.priority
+              )} mt-0.5`}
+            >
+              {getPriorityIcon(request.priority)}
+              {request.priority}
+            </Badge>
+          </div>
         </div>
         {/* Main Content */}
-        <CardContent className='p-6 space-y-5 bg-white'>
-          <div className='flex items-center gap-4'>
-            <Badge className={`font-mono text-lg px-4 py-2 border ${getBloodTypeColor(request.bloodType)}`}>
-              {request.bloodType}
-            </Badge>
-            <div className='flex items-center gap-2'>
-              <Heart className='h-5 w-5 text-red-500' />
-              <span className='text-xl font-bold'>{request.quantity}</span>
-              <span className='text-gray-600'>đơn vị</span>
+        <CardContent className='p-6 bg-white'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            {/* Left column: blood info */}
+            <div className='space-y-6'>
+              <div className='flex items-center gap-5'>
+                <div
+                  className={`rounded-lg border ${getBloodTypeColor(
+                    request.bloodType
+                  )} flex flex-col items-center justify-center px-6 py-3 shadow font-mono text-2xl font-bold`}
+                >
+                  {request.bloodType}
+                </div>
+                <div className='flex items-center gap-2'>
+                  <span className='bg-red-100 rounded-full p-1.5'>
+                    <Heart className='h-5 w-5 text-red-500' />
+                  </span>
+                  <span className='text-xl font-bold'>{request.quantity}</span>
+                  <span className='text-gray-500'>đơn vị</span>
+                </div>
+              </div>
+              <div className='flex items-center gap-3'>
+                <span className='bg-blue-100 rounded-full p-1.5'>
+                  <MapPin className='h-5 w-5 text-blue-500' />
+                </span>
+                <span className='text-gray-800 font-medium'>{request.location}</span>
+              </div>
+              <div className='flex items-center gap-3'>
+                <span className='bg-green-100 rounded-full p-1.5'>
+                  <Calendar className='h-5 w-5 text-green-500' />
+                </span>
+                <span className='text-gray-800'>
+                  Ngày dự kiến:{' '}
+                  <span className='font-semibold'>{request.scheduleDate ? formatDate(request.scheduleDate) : '-'}</span>
+                </span>
+              </div>
+              <div className='flex items-center gap-3'>
+                <span className='bg-purple-100 rounded-full p-1.5'>
+                  <User className='h-5 w-5 text-purple-500' />
+                </span>
+                <span className='text-gray-800'>
+                  Người tạo: <span className='font-semibold'>{request.createdBy}</span>
+                </span>
+              </div>
+            </div>
+            {/* Right column: priority, note, contact */}
+            <div className='space-y-6'>
+              {/* Progress bar cho ưu tiên */}
+              {(request.priority === 'Cấp cứu' || request.priority === 'Khẩn cấp') && (
+                <div className='mt-2'>
+                  <div className='flex items-center justify-between mb-1'>
+                    <span className='text-xs text-gray-500'>Mức độ khẩn cấp</span>
+                    <span className='text-xs font-medium text-gray-700'>
+                      {request.priority === 'Cấp cứu' ? '95%' : '70%'}
+                    </span>
+                  </div>
+                  <div className='w-full bg-gradient-to-r from-red-200 via-orange-200 to-gray-200 rounded-full h-2'>
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        request.priority === 'Cấp cứu'
+                          ? 'bg-gradient-to-r from-red-500 to-red-400 w-[95%]'
+                          : 'bg-gradient-to-r from-orange-500 to-orange-400 w-[70%]'
+                      }`}
+                    />
+                  </div>
+                </div>
+              )}
+              {/* Ghi chú */}
+              {request.note && (
+                <div className='flex items-start gap-3 bg-gray-50 rounded-lg p-3 shadow-sm border border-gray-100'>
+                  <span className='bg-gray-200 rounded-full p-1.5'>
+                    <FileText className='h-5 w-5 text-gray-500' />
+                  </span>
+                  <div>
+                    <div className='text-gray-700 font-semibold mb-1 text-sm'>Ghi chú</div>
+                    <div className='text-gray-600 text-sm whitespace-pre-line'>{request.note}</div>
+                  </div>
+                </div>
+              )}
+              {/* Liên hệ (giả lập) */}
+              <div className='flex items-center gap-3'>
+                <span className='bg-blue-100 rounded-full p-1.5'>
+                  <Phone className='h-5 w-5 text-blue-500' />
+                </span>
+                <span className='text-gray-700 text-sm'>
+                  SĐT: <span className='font-semibold'>{request.phone || '---'}</span>
+                </span>
+              </div>
+              <div className='flex items-center gap-3'>
+                <span className='bg-blue-100 rounded-full p-1.5'>
+                  <Mail className='h-5 w-5 text-blue-500' />
+                </span>
+                <span className='text-gray-700 text-sm'>
+                  Email: <span className='font-semibold'>{request.email || '---'}</span>
+                </span>
+              </div>
             </div>
           </div>
-          <div className='flex items-center gap-2'>
-            <MapPin className='h-5 w-5 text-blue-500' />
-            <span className='text-gray-800'>{request.location}</span>
-          </div>
-          <div className='flex items-center gap-2'>
-            <User className='h-5 w-5 text-purple-500' />
-            <span className='text-gray-800'>{request.createdBy}</span>
-          </div>
-          {request.priority && (
-            <div className='flex items-center gap-2'>
-              {getPriorityIcon(request.priority)}
-              <span className='text-gray-700 font-semibold'>{request.priority}</span>
-            </div>
-          )}
         </CardContent>
         {/* Footer Actions */}
-        <div className='bg-gray-50 p-4 flex justify-end gap-3 border-t rounded-b-xl'>
-          <Button variant='outline' onClick={onClose}>
+        <div className='bg-gray-50 p-4 flex flex-col md:flex-row justify-end gap-3 border-t rounded-b-2xl'>
+          <Button variant='outline' onClick={onClose} className='min-w-[100px]'>
             Đóng
           </Button>
-          <Button className='bg-blue-600 hover:bg-blue-700 text-white'>Liên hệ</Button>
-          <Button className='bg-red-600 hover:bg-red-700 text-white'>Xử lý ngay</Button>
+          <Button className='bg-blue-600 hover:bg-blue-700 text-white min-w-[120px] flex items-center gap-2 shadow-md'>
+            <Phone className='h-4 w-4' />
+            Liên hệ
+          </Button>
+          <Button className='bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white min-w-[120px] flex items-center gap-2 shadow-lg font-bold text-base'>
+            <CheckCircle className='h-4 w-4' />
+            Xử lý ngay
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

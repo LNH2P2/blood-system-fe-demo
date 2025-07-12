@@ -8,6 +8,10 @@ export interface BloodRequest {
   status: string
   location: string
   createdBy: string // Thông tin người tạo yêu cầu
+  scheduleDate?: string
+  note?: string
+  phone?: string
+  email?: string
 }
 
 export interface BloodInventory {

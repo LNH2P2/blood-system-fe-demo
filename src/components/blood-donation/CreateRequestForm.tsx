@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -8,26 +8,22 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card } from '@/components/ui/card'
 import http from '@/lib/http'
+import { createDonationRequest, getAllHospitals } from '@/lib/apis/blood-donation.api'
+import { toast } from 'sonner'
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
 const PRIORITIES = [
   {
-    value: 'Cấp cứu',
-    label: 'Cấp cứu',
-    icon: <Zap className='h-5 w-5 text-red-600' />,
-    desc: 'Rất gấp, nguy hiểm đến tính mạng'
-  },
-  {
-    value: 'Khẩn cấp',
+    value: 'urgent',
     label: 'Khẩn cấp',
     icon: <AlertTriangle className='h-5 w-5 text-orange-500' />,
-    desc: 'Cần máu trong vài giờ'
+    desc: 'Cần máu gấp, ưu tiên xử lý'
   },
   {
-    value: 'Bình thường',
+    value: 'normal',
     label: 'Bình thường',
     icon: <Activity className='h-5 w-5 text-blue-500' />,
-    desc: 'Không quá gấp'
+    desc: 'Không quá gấp, xử lý theo thứ tự'
   }
 ]
 
@@ -37,10 +33,11 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
     recipientInfo: '',
     bloodType: '',
     quantity: 1,
+    hospitalId: '',
     location: '',
     scheduleDate: '',
     note: '',
-    priority: 'Bình thường'
+    priority: 'normal'
   })
   const [submitting, setSubmitting] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -48,6 +45,19 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
   const [showCreateNew, setShowCreateNew] = useState(false)
   const [loading, setLoading] = useState(false)
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
+  const [hospitals, setHospitals] = useState<any[]>([])
+  const [loadingHospitals, setLoadingHospitals] = useState(false)
+
+  useEffect(() => {
+    setLoadingHospitals(true)
+    getAllHospitals()
+      .then((res) => {
+        console.log(res)
+        setHospitals(Array.isArray(res.payload.data) ? res.payload.data : [])
+      })
+      .catch(() => setHospitals([]))
+      .finally(() => setLoadingHospitals(false))
+  }, [])
 
   const handleSearch = (value: string) => {
     setSearchTerm(value)
@@ -100,8 +110,40 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
   const handleSubmit = async (e: any) => {
     e.preventDefault()
     setSubmitting(true)
-    if (onSubmit) onSubmit(form)
-    setTimeout(() => setSubmitting(false), 1000)
+    try {
+      // Map dữ liệu sang DTO backend
+      const payload = {
+        userId: form.recipientId || 'demo-user-id', // TODO: lấy userId thực tế nếu có
+        hospitalId: form.hospitalId || '6850cfd1effc21cd19654cd4', // TODO: lấy hospitalId thực tế nếu có
+        bloodType: form.bloodType,
+        quantity: Number(form.quantity),
+        location: form.location,
+        scheduleDate: form.scheduleDate,
+        note: form.note,
+        priority: form.priority,
+        createdBy: form.recipientInfo || 'Người nhận demo'
+      }
+      await createDonationRequest(payload)
+      toast.success('Tạo yêu cầu hiến máu thành công!')
+      if (onSubmit) onSubmit(form)
+      // Reset form nếu muốn
+      setForm({
+        recipientId: '',
+        recipientInfo: '',
+        bloodType: '',
+        quantity: 1,
+        hospitalId: '',
+        location: '',
+        scheduleDate: '',
+        note: '',
+        priority: 'normal'
+      })
+    } catch (error) {
+      toast.error('Tạo yêu cầu thất bại. Vui lòng thử lại!')
+      console.error(error)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -170,20 +212,31 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
 
       <div className='grid grid-cols-2 gap-6'>
         <div>
-          <Label htmlFor='bloodType' className='text-gray-700'>
-            Nhóm máu
+          <Label htmlFor='hospitalId' className='text-gray-700'>
+            Bệnh viện
           </Label>
           <Select
-            value={form.bloodType}
-            onValueChange={(value) => handleChange({ target: { name: 'bloodType', value } })}
+            value={form.hospitalId || ''}
+            onValueChange={(value) => {
+              const hospital = hospitals.find((h) => h._id === value)
+              setForm((prev) => ({
+                ...prev,
+                hospitalId: value,
+                location: hospital?.name || ''
+              }))
+            }}
+            disabled={loadingHospitals}
           >
             <SelectTrigger className='mt-1.5'>
-              <SelectValue placeholder='Chọn nhóm máu' />
+              <SelectValue placeholder={loadingHospitals ? 'Đang tải...' : 'Chọn bệnh viện'} />
             </SelectTrigger>
             <SelectContent>
-              {BLOOD_TYPES.map((type) => (
-                <SelectItem key={type} value={type}>
-                  {type}
+              {hospitals.length === 0 && !loadingHospitals && (
+                <div className='px-4 py-2 text-gray-500'>Không có dữ liệu</div>
+              )}
+              {hospitals.map((h) => (
+                <SelectItem key={h._id} value={h._id}>
+                  {h.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -206,35 +259,19 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
         </div>
       </div>
 
-      <div className='grid grid-cols-2 gap-6'>
-        <div>
-          <Label htmlFor='location' className='text-gray-700'>
-            Địa điểm
-          </Label>
-          <Input
-            id='location'
-            name='location'
-            value={form.location}
-            onChange={handleChange}
-            className='mt-1.5'
-            placeholder='Nhập địa điểm'
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor='scheduleDate' className='text-gray-700'>
-            Ngày dự kiến
-          </Label>
-          <Input
-            id='scheduleDate'
-            name='scheduleDate'
-            type='date'
-            value={form.scheduleDate}
-            onChange={handleChange}
-            className='mt-1.5'
-            required
-          />
-        </div>
+      <div>
+        <Label htmlFor='scheduleDate' className='text-gray-700'>
+          Ngày dự kiến
+        </Label>
+        <Input
+          id='scheduleDate'
+          name='scheduleDate'
+          type='date'
+          value={form.scheduleDate}
+          onChange={handleChange}
+          className='mt-1.5'
+          required
+        />
       </div>
 
       <div>
