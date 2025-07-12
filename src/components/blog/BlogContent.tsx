@@ -26,7 +26,8 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
-  Search
+  Search,
+  X
 } from 'lucide-react'
 import { Blog, BlogStatus, BlogFilters } from '@/types/blog'
 import { blogApi } from '@/lib/apis/blog.api'
@@ -155,6 +156,27 @@ export default function BlogContent({
   const handlePageChange = (page: number) => {
     onFiltersChange({ page })
   }
+
+  const handleClearFilters = () => {
+    // Reset search term
+    setSearchTerm?.('')
+
+    // Reset all filters to default
+    onFiltersChange({
+      q: undefined,
+      status: undefined,
+      order: undefined,
+      page: 1
+    })
+
+    // Optional: trigger refresh to get fresh data
+    // onRefresh()
+  }
+
+  // Check if any filters are active
+  const hasActiveFilters = Boolean(
+    searchTerm || currentFilters?.status || (currentFilters?.order && currentFilters.order !== 'desc')
+  )
 
   const getStatusColor = (status?: BlogStatus) => {
     switch (status) {
@@ -295,10 +317,24 @@ export default function BlogContent({
                 <CardDescription>Tìm kiếm và lọc bài viết một cách nhanh chóng</CardDescription>
               </div>
             </div>
-            <Button size='sm' className='bg-red-600 hover:bg-red-700' onClick={handleCreate}>
-              <Plus className='h-4 w-4 mr-2' />
-              Tạo bài viết mới
-            </Button>
+            <div className='flex items-center space-x-3'>
+              {hasActiveFilters && (
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={handleClearFilters}
+                  className='border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-red-300 hover:text-red-700 transition-colors'
+                  title='Xóa tất cả bộ lọc và tìm kiếm'
+                >
+                  <X className='h-4 w-4 mr-2' />
+                  Xóa bộ lọc
+                </Button>
+              )}
+              <Button size='sm' className='bg-red-600 hover:bg-red-700' onClick={handleCreate}>
+                <Plus className='h-4 w-4 mr-2' />
+                Tạo bài viết mới
+              </Button>
+            </div>
           </div>
 
           {/* Search Row */}
@@ -360,7 +396,22 @@ export default function BlogContent({
           </div>
 
           {/* Quick Filter Chips */}
-          <div className='flex flex-wrap gap-2'>
+          <div className='flex flex-wrap gap-2 items-center'>
+            {hasActiveFilters && (
+              <div className='flex items-center bg-blue-50 border border-blue-200 rounded-full px-3 py-1 text-sm text-blue-700'>
+                <Filter className='h-3 w-3 mr-1' />
+                Bộ lọc đang hoạt động
+                <span className='ml-2 bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-semibold'>
+                  {
+                    [
+                      searchTerm,
+                      currentFilters?.status,
+                      currentFilters?.order !== 'desc' ? currentFilters?.order : null
+                    ].filter(Boolean).length
+                  }
+                </span>
+              </div>
+            )}
             <Button
               variant={!currentFilters?.status ? 'default' : 'outline'}
               size='sm'

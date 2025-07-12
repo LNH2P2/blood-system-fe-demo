@@ -28,13 +28,6 @@ export const blogApi = {
     const queryString = queryParams.toString()
     const url = queryString ? `${BASE_PATH}?${queryString}` : BASE_PATH
 
-    // Log for debugging performance
-    console.log('🚀 Blog API Request:', {
-      url,
-      filters: Object.keys(filters || {}).length > 0 ? filters : 'no filters',
-      queryParams: queryString || 'no params'
-    })
-
     return http.get<BlogListResponse>(url)
   },
 
