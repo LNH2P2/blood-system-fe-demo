@@ -23,16 +23,33 @@ interface DonationRequestsResponse {
   }
 }
 
+// Mapping status enum sang text dễ hiểu
+const STATUS_LABELS: Record<number | string, string> = {
+  0: 'Chờ xử lý',
+  1: 'Hoàn thành',
+  2: 'Đã hủy',
+  SCHEDULED: 'Chờ xử lý',
+  COMPLETED: 'Hoàn thành',
+  CANCELLED: 'Đã hủy'
+}
+// Mapping priority sang tiếng Việt và badge
+const PRIORITY_LABELS: Record<string, string> = {
+  urgent: 'Khẩn cấp',
+  normal: 'Bình thường',
+  'Khẩn cấp': 'Khẩn cấp',
+  'Bình thường': 'Bình thường'
+}
+
 export default function RequestsContent({ requests: initialRequests }: RequestsContentProps) {
   const [requests, setRequests] = useState<BloodRequest[]>(initialRequests)
   const [selectedRequest, setSelectedRequest] = useState<BloodRequest | null>(null)
   const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [priorityFilter, setPriorityFilter] = useState<string>('all')
 
-  const { data: donationRequestsData, isLoading: loadingRequests } = useDonationRequestsForHospital({
-    page: 1,
-    limit: 20
-  })
+  const { data: donationRequestsData, isLoading: loadingRequests } = useDonationRequestsForHospital(
+    priorityFilter === 'all' ? { page: 1, limit: 20 } : { page: 1, limit: 20, priority: priorityFilter }
+  )
 
   useEffect(() => {
     const data = donationRequestsData as DonationRequestsResponse | undefined
@@ -52,25 +69,27 @@ export default function RequestsContent({ requests: initialRequests }: RequestsC
     setIsDetailOpen(false)
     setSelectedRequest(null)
   }
+  // Đổi icon cho từng mức độ priority, dùng màu trắng và drop-shadow cho nổi bật
   const getPriorityIcon = (priority: string) => {
     switch (priority) {
       case 'Cấp cứu':
-        return <Zap className='h-4 w-4 text-red-600' />
+        return <Zap className='h-4 w-4 text-white drop-shadow' />
       case 'Khẩn cấp':
-        return <AlertTriangle className='h-4 w-4 text-orange-500' />
+        return <AlertTriangle className='h-4 w-4 text-white drop-shadow' />
       default:
-        return <Activity className='h-4 w-4 text-blue-500' />
+        return <Activity className='h-4 w-4 text-white drop-shadow' />
     }
   }
 
+  // Improved priority color scheme for better UI
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'Cấp cứu':
-        return 'border-l-red-500 bg-red-50/50'
+        return 'border-l-4 border-l-[#e53935] bg-gradient-to-r from-[#ffeaea] to-[#fff5f5]'
       case 'Khẩn cấp':
-        return 'border-l-orange-500 bg-orange-50/50'
+        return 'border-l-4 border-l-[#ff9800] bg-gradient-to-r from-[#fff4e0] to-[#fff9ed]'
       default:
-        return 'border-l-blue-500 bg-blue-50/50'
+        return 'border-l-4 border-l-[#1976d2] bg-gradient-to-r from-[#e3f0ff] to-[#f5faff]'
     }
   }
 
@@ -88,34 +107,18 @@ export default function RequestsContent({ requests: initialRequests }: RequestsC
     return colors[bloodType as keyof typeof colors] || 'bg-gray-100 text-gray-800 border-gray-300'
   }
 
-  const getStats = () => {
-    const emergency = requests.filter((r) => r.priority === 'Cấp cứu').length
-    const urgent = requests.filter((r) => r.priority === 'Khẩn cấp').length
-    const normal = requests.filter((r) => r.priority === 'Bình thường').length
-    const processing = requests.filter((r) => r.status === 'Đang xử lý').length
-    const completed = requests.filter((r) => r.status === 'Hoàn thành').length
-
-    return { emergency, urgent, normal, processing, completed }
+  // Thống kê nên dựa trên dữ liệu trả về từ API (đã filter server), không filter client nữa
+  const stats = {
+    urgent: requests.filter((r) => r.priority === 'Khẩn cấp').length,
+    normal: requests.filter((r) => r.priority === 'Bình thường').length,
+    processing: requests.filter((r) => r.status === 'Đang xử lý').length,
+    completed: requests.filter((r) => r.status === 'Hoàn thành').length
   }
-
-  const stats = getStats()
 
   return (
     <div className='space-y-6'>
       {/* Stats Cards */}
-      <div className='grid grid-cols-1 md:grid-cols-5 gap-4'>
-        <Card className='border-red-200 bg-red-50'>
-          <CardContent className='p-4'>
-            <div className='flex items-center justify-between'>
-              <div>
-                <p className='text-sm font-medium text-red-600'>Cấp cứu</p>
-                <p className='text-2xl font-bold text-red-700'>{stats.emergency}</p>
-              </div>
-              <Zap className='h-6 w-6 text-red-500' />
-            </div>
-          </CardContent>
-        </Card>
-
+      <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
         <Card className='border-orange-200 bg-orange-50'>
           <CardContent className='p-4'>
             <div className='flex items-center justify-between'>
@@ -194,7 +197,7 @@ export default function RequestsContent({ requests: initialRequests }: RequestsC
             </div>
             <div className='text-right'>
               <div className='text-sm text-red-100'>Khẩn cấp</div>
-              <div className='text-2xl font-bold text-yellow-300'>{stats.emergency + stats.urgent}</div>
+              <div className='text-2xl font-bold text-yellow-300'>{stats.urgent}</div>
             </div>
           </div>
         </div>
@@ -211,13 +214,12 @@ export default function RequestsContent({ requests: initialRequests }: RequestsC
               </div>
             </div>
             <div className='flex items-center space-x-3'>
-              <Select>
+              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
                 <SelectTrigger className='w-48 border-red-200 focus:border-red-500'>
                   <SelectValue placeholder='Lọc theo mức độ' />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value='all'>Tất cả</SelectItem>
-                  <SelectItem value='emergency'>Cấp cứu</SelectItem>
                   <SelectItem value='urgent'>Khẩn cấp</SelectItem>
                   <SelectItem value='normal'>Bình thường</SelectItem>
                 </SelectContent>
@@ -239,7 +241,7 @@ export default function RequestsContent({ requests: initialRequests }: RequestsC
               <div
                 key={request.id}
                 className={`p-6 border-l-4 hover:bg-gray-50/50 hover:shadow-md transition-all duration-200 ${getPriorityColor(
-                  request.priority
+                  PRIORITY_LABELS[request.priority] || request.priority
                 )} ${index !== requests.length - 1 ? 'border-b border-gray-100' : ''} group cursor-pointer`}
               >
                 <div className='flex items-center justify-between'>
@@ -247,7 +249,7 @@ export default function RequestsContent({ requests: initialRequests }: RequestsC
                     <div className='flex items-center space-x-4 mb-3'>
                       <div className='flex items-center space-x-2'>
                         <div className='transition-transform group-hover:scale-110'>
-                          {getPriorityIcon(request.priority)}
+                          {getPriorityIcon(PRIORITY_LABELS[request.priority] || request.priority)}
                         </div>
                         <div>
                           <h4 className='font-semibold text-lg text-gray-800 group-hover:text-red-600 transition-colors'>
@@ -259,23 +261,42 @@ export default function RequestsContent({ requests: initialRequests }: RequestsC
                           </span>
                         </div>
                       </div>
-                      <Badge
-                        variant={getPriorityBadge(request.priority)}
-                        className={`${
-                          request.priority === 'Cấp cứu'
-                            ? 'bg-red-100 text-red-800 border-red-300 animate-pulse'
-                            : request.priority === 'Khẩn cấp'
-                            ? 'bg-orange-100 text-orange-800 border-orange-300'
-                            : 'bg-blue-100 text-blue-800 border-blue-300'
-                        } font-semibold`}
-                      >
-                        {request.priority}
-                      </Badge>
+                      {/* Priority Badge đẹp hơn với gradient, icon, shadow, tooltip */}
+                      <div className='relative group inline-block'>
+                        <Badge
+                          variant={getPriorityBadge(PRIORITY_LABELS[request.priority] || request.priority)}
+                          className={`flex items-center gap-1 px-3 py-1 rounded-full font-semibold text-white border-0 shadow-md transition-all duration-200
+                            ${
+                              (PRIORITY_LABELS[request.priority] || request.priority) === 'Cấp cứu'
+                                ? 'bg-gradient-to-r from-red-500 to-pink-500 shadow-red-400/30 drop-shadow-lg animate-pulse'
+                                : (PRIORITY_LABELS[request.priority] || request.priority) === 'Khẩn cấp'
+                                ? 'bg-gradient-to-r from-orange-400 to-yellow-400 shadow-orange-400/30 drop-shadow-lg'
+                                : 'bg-gradient-to-r from-blue-500 to-cyan-400 shadow-blue-400/30 drop-shadow-lg'
+                            }
+                          `}
+                        >
+                          {getPriorityIcon(PRIORITY_LABELS[request.priority] || request.priority)}
+                          <span>{PRIORITY_LABELS[request.priority] || request.priority}</span>
+                        </Badge>
+                        {/* Tooltip giải thích priority */}
+                        <span className='absolute left-1/2 -translate-x-1/2 mt-2 z-10 hidden group-hover:block bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-lg whitespace-nowrap'>
+                          {(() => {
+                            switch (PRIORITY_LABELS[request.priority] || request.priority) {
+                              case 'Cấp cứu':
+                                return 'Xử lý trong 30 phút (khẩn cấp nhất)'
+                              case 'Khẩn cấp':
+                                return 'Xử lý trong 2 giờ'
+                              default:
+                                return 'Xử lý trong 24 giờ'
+                            }
+                          })()}
+                        </span>
+                      </div>
                       <Badge
                         variant={getStatusBadge(request.status)}
                         className={`font-medium ${getStatusColor(request.status)}`}
                       >
-                        {request.status}
+                        {STATUS_LABELS[request.status] || request.status}
                       </Badge>
                     </div>
                     <div className='grid grid-cols-4 gap-6 text-sm'>

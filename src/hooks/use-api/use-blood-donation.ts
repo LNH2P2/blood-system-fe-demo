@@ -17,7 +17,7 @@ export const useGetAllHospitals = () => {
   })
 }
 
-export const useDonationRequestsForHospital = (params: { page: number; limit: number }) => {
+export const useDonationRequestsForHospital = (params: { page: number; limit: number; priority?: string }) => {
   return useQuery({
     queryKey: ['donation-requests', params],
     queryFn: () => getDonationRequestsForHospital(params)
