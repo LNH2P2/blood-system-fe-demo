@@ -1,10 +1,10 @@
-'use client'
-
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Search, Bell, Plus } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 interface HeaderProps {
   activeMenu: string
@@ -22,7 +22,8 @@ export default function AppHeader({ activeMenu, showNotifications, setShowNotifi
       appointments: 'Lịch hẹn',
       reports: 'Báo cáo',
       notifications: 'Thông báo',
-      settings: 'Cài đặt'
+      settings: 'Cài đặt',
+      home: "BloodCare"
     }
     return titles[menu] || 'Dashboard'
   }
@@ -36,10 +37,21 @@ export default function AppHeader({ activeMenu, showNotifications, setShowNotifi
       appointments: 'Quản lý lịch hẹn hiến máu',
       reports: 'Báo cáo và thống kê hệ thống',
       notifications: 'Quản lý thông báo hệ thống',
-      settings: 'Cấu hình hệ thống'
+      settings: 'Cấu hình hệ thống',
+      home: "Trang giới thiệu hệ thống hiến máu"
     }
     return descriptions[menu] || 'Tổng quan hệ thống quản lý hiến máu'
   }
+
+
+  const [username, setUsername] = useState<string | null>(null)
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('username')
+    if (storedUser) {
+      setUsername(storedUser)
+    }
+  }, [])
 
   return (
     <header className='bg-white shadow-sm border-b px-6 py-4'>
@@ -105,10 +117,35 @@ export default function AppHeader({ activeMenu, showNotifications, setShowNotifi
           </DropdownMenu>
 
           {/* Quick Actions */}
-          <Button>
-            <Plus className='h-4 w-4 mr-2' />
-            Tạo yêu cầu
-          </Button>
+          <>
+            {activeMenu === 'dashboard' ? (
+              <Button>
+                <Plus className='h-4 w-4 mr-2' />
+                Tạo yêu cầu
+              </Button>
+            ) : (
+              <>
+                {username ? (
+                  <div className='font-semibold text-[#DC2626]'>
+                    Xin chào, {username}
+                  </div>
+                ) : (
+                  <>
+                    <Link href='/vi/register'>
+                      <Button variant='outline' className='mr-2'>
+                        Đăng ký
+                      </Button>
+                    </Link>
+                    <Link href='/vi/login'>
+                      <Button variant='outline'>
+                        Đăng nhập
+                      </Button>
+                    </Link>
+                  </>
+                )}
+              </>
+            )}
+          </>
         </div>
       </div>
     </header>
