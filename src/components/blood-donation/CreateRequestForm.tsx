@@ -4,9 +4,10 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { AlertTriangle, Zap, Activity, Heart } from 'lucide-react'
+import { AlertTriangle, Zap, Activity, Heart, Search, Plus, User } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Card } from '@/components/ui/card'
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
 const PRIORITIES = [
@@ -32,7 +33,8 @@ const PRIORITIES = [
 
 export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any) => void }) {
   const [form, setForm] = useState({
-    createdBy: '',
+    recipientId: '',
+    recipientInfo: '',
     bloodType: '',
     quantity: 1,
     location: '',
@@ -41,6 +43,35 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
     priority: 'Bình thường'
   })
   const [submitting, setSubmitting] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [showCreateNew, setShowCreateNew] = useState(false)
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value)
+    // TODO: Implement actual search API call
+    // For now, just mock some results
+    if (value.length > 0) {
+      setSearchResults([
+        { id: '1', name: 'Nguyễn Văn A', phone: '0912345678', email: 'nguyenvana@gmail.com', type: 'donor' },
+        { id: '2', name: 'Trần Thị B', phone: '0923456789', email: 'tranthib@gmail.com', type: 'recipient' }
+      ])
+      setShowCreateNew(true)
+    } else {
+      setSearchResults([])
+      setShowCreateNew(false)
+    }
+  }
+
+  const handleSelectRecipient = (recipient: any) => {
+    setForm((prev) => ({
+      ...prev,
+      recipientId: recipient.id,
+      recipientInfo: `${recipient.name} - ${recipient.phone}`
+    }))
+    setSearchResults([])
+    setSearchTerm('')
+  }
 
   const handleChange = (e: any) => {
     const { name, value } = e.target
@@ -60,21 +91,62 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
 
   return (
     <form className='space-y-6 p-6' onSubmit={handleSubmit}>
-      <div className='grid grid-cols-2 gap-6'>
-        <div>
-          <Label htmlFor='createdBy' className='text-gray-700'>
-            Họ tên người tạo
-          </Label>
-          <Input
-            id='createdBy'
-            name='createdBy'
-            value={form.createdBy}
-            onChange={handleChange}
-            className='mt-1.5'
-            placeholder='Nhập họ tên người tạo'
-            required
-          />
+      <div>
+        <Label className='text-gray-700'>Người nhận máu</Label>
+        <div className='relative'>
+          <div className='relative'>
+            <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400' />
+            <Input
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+              className='pl-10 pr-4 mt-1.5'
+              placeholder='Tìm theo tên, số điện thoại hoặc email'
+            />
+          </div>
+
+          {/* Search Results Dropdown */}
+          {searchResults.length > 0 && (
+            <Card className='absolute z-10 w-full mt-1 border shadow-lg bg-white rounded-md overflow-hidden'>
+              <div className='max-h-60 overflow-auto'>
+                {searchResults.map((result) => (
+                  <button
+                    key={result.id}
+                    type='button'
+                    className='w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-3'
+                    onClick={() => handleSelectRecipient(result)}
+                  >
+                    <User className='h-5 w-5 text-gray-400' />
+                    <div>
+                      <div className='font-medium'>{result.name}</div>
+                      <div className='text-sm text-gray-500'>
+                        {result.phone} • {result.email}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              {showCreateNew && (
+                <div className='border-t p-2'>
+                  <Button
+                    type='button'
+                    variant='ghost'
+                    className='w-full justify-start text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+                    onClick={() => {
+                      /* TODO: Handle create new */
+                    }}
+                  >
+                    <Plus className='h-4 w-4 mr-2' />
+                    Tạo người nhận mới
+                  </Button>
+                </div>
+              )}
+            </Card>
+          )}
         </div>
+        {form.recipientInfo && <div className='mt-2 text-sm text-gray-600'>Đã chọn: {form.recipientInfo}</div>}
+      </div>
+
+      <div className='grid grid-cols-2 gap-6'>
         <div>
           <Label htmlFor='bloodType' className='text-gray-700'>
             Nhóm máu
@@ -95,9 +167,6 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
             </SelectContent>
           </Select>
         </div>
-      </div>
-
-      <div className='grid grid-cols-2 gap-6'>
         <div>
           <Label htmlFor='quantity' className='text-gray-700'>
             Số lượng (đơn vị)
@@ -113,6 +182,9 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
             required
           />
         </div>
+      </div>
+
+      <div className='grid grid-cols-2 gap-6'>
         <div>
           <Label htmlFor='location' className='text-gray-700'>
             Địa điểm
@@ -127,21 +199,20 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
             required
           />
         </div>
-      </div>
-
-      <div>
-        <Label htmlFor='scheduleDate' className='text-gray-700'>
-          Ngày dự kiến
-        </Label>
-        <Input
-          id='scheduleDate'
-          name='scheduleDate'
-          type='date'
-          value={form.scheduleDate}
-          onChange={handleChange}
-          className='mt-1.5'
-          required
-        />
+        <div>
+          <Label htmlFor='scheduleDate' className='text-gray-700'>
+            Ngày dự kiến
+          </Label>
+          <Input
+            id='scheduleDate'
+            name='scheduleDate'
+            type='date'
+            value={form.scheduleDate}
+            onChange={handleChange}
+            className='mt-1.5'
+            required
+          />
+        </div>
       </div>
 
       <div>
