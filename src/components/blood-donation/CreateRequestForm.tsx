@@ -1,4 +1,10 @@
 'use client'
+// Enum đồng bộ với backend
+export enum DonationRequestStatus {
+  SCHEDULED = 0,
+  COMPLETED = 1,
+  CANCELLED = 2
+}
 import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -7,8 +13,8 @@ import { AlertTriangle, Zap, Activity, Heart, Search, Plus, User, Loader2 } from
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card } from '@/components/ui/card'
-import http from '@/lib/http'
-import { createDonationRequest, getAllHospitals } from '@/lib/apis/blood-donation.api'
+import { useCreateDonationRequest, useGetAllHospitals } from '@/hooks/use-api/use-blood-donation'
+import { useSearchUsers } from '@/hooks/use-api/use-user'
 import { toast } from 'sonner'
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
@@ -27,6 +33,31 @@ const PRIORITIES = [
   }
 ]
 
+interface UserSearchResult {
+  id?: string
+  _id?: string
+  fullName?: string
+  name?: string
+  phone?: string
+  phoneNumber?: string
+  email?: string
+  [key: string]: any
+}
+
+interface Hospital {
+  _id: string
+  name: string
+  [key: string]: any
+}
+
+interface HospitalsResponse {
+  status: number
+  payload: {
+    data: Hospital[]
+    [key: string]: any
+  }
+}
+
 export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any) => void }) {
   const [form, setForm] = useState({
     recipientId: '',
@@ -37,27 +68,28 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
     location: '',
     scheduleDate: '',
     note: '',
-    priority: 'normal'
+    priority: 'normal',
+    status: ''
   })
   const [submitting, setSubmitting] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [searchResults, setSearchResults] = useState<UserSearchResult[]>([])
   const [showCreateNew, setShowCreateNew] = useState(false)
   const [loading, setLoading] = useState(false)
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
-  const [hospitals, setHospitals] = useState<any[]>([])
-  const [loadingHospitals, setLoadingHospitals] = useState(false)
+  const [hospitals, setHospitals] = useState<Hospital[]>([])
+  const createDonationRequestMutation = useCreateDonationRequest()
+  const { data: hospitalsData, isLoading: loadingHospitals } = useGetAllHospitals()
+  const searchUsersMutation = useSearchUsers()
 
   useEffect(() => {
-    setLoadingHospitals(true)
-    getAllHospitals()
-      .then((res) => {
-        console.log(res)
-        setHospitals(Array.isArray(res.payload.data) ? res.payload.data : [])
-      })
-      .catch(() => setHospitals([]))
-      .finally(() => setLoadingHospitals(false))
-  }, [])
+    const data = hospitalsData as HospitalsResponse | undefined
+    if (data && Array.isArray(data.payload?.data)) {
+      setHospitals(data.payload.data)
+    } else {
+      setHospitals([])
+    }
+  }, [hospitalsData])
 
   const handleSearch = (value: string) => {
     setSearchTerm(value)
@@ -71,13 +103,8 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
     setLoading(true)
     debounceRef.current = setTimeout(async () => {
       try {
-        // Gọi API tìm user
-        const res = await fetch(`http://localhost:3000/api/users?current=1&limit=10&qs=${encodeURIComponent(value)}`)
-        const data = await res.json()
-        console.log('data:', data)
-        // Giả sử data.payload.data là mảng kết quả
-        const users = data?.data.data.result || []
-        setSearchResults(users)
+        const users = await searchUsersMutation.mutateAsync(value)
+        setSearchResults(users as UserSearchResult[])
         setShowCreateNew(true)
       } catch (e) {
         setSearchResults([])
@@ -111,22 +138,21 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
     e.preventDefault()
     setSubmitting(true)
     try {
-      // Map dữ liệu sang DTO backend
       const payload = {
-        userId: form.recipientId || 'demo-user-id', // TODO: lấy userId thực tế nếu có
-        hospitalId: form.hospitalId || '6850cfd1effc21cd19654cd4', // TODO: lấy hospitalId thực tế nếu có
+        userId: form.recipientId || 'demo-user-id',
+        hospitalId: form.hospitalId || '6850cfd1effc21cd19654cd4',
         bloodType: form.bloodType,
         quantity: Number(form.quantity),
         location: form.location,
         scheduleDate: form.scheduleDate,
         note: form.note,
         priority: form.priority,
+        status: Number(form.status),
         createdBy: form.recipientInfo || 'Người nhận demo'
       }
-      await createDonationRequest(payload)
+      await createDonationRequestMutation.mutateAsync(payload)
       toast.success('Tạo yêu cầu hiến máu thành công!')
-      if (onSubmit) onSubmit(form)
-      // Reset form nếu muốn
+      if (onSubmit) onSubmit({ ...form, status: Number(form.status) })
       setForm({
         recipientId: '',
         recipientInfo: '',
@@ -136,7 +162,8 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
         location: '',
         scheduleDate: '',
         note: '',
-        priority: 'normal'
+        priority: 'normal',
+        status: ''
       })
     } catch (error) {
       toast.error('Tạo yêu cầu thất bại. Vui lòng thử lại!')
@@ -147,7 +174,8 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
   }
 
   return (
-    <form className='space-y-6 p-6' onSubmit={handleSubmit}>
+    <form className='space-y-4 p-6 max-w-4xl mx-auto' onSubmit={handleSubmit} style={{ minWidth: 400 }}>
+      {/* Người nhận máu */}
       <div>
         <Label className='text-gray-700'>Người nhận máu</Label>
         <div className='relative'>
@@ -210,37 +238,40 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
         {form.recipientInfo && <div className='mt-2 text-sm text-gray-600'>Đã chọn: {form.recipientInfo}</div>}
       </div>
 
-      <div className='grid grid-cols-2 gap-6'>
+      {/* 2 cột: Bệnh viện | Số lượng */}
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
         <div>
           <Label htmlFor='hospitalId' className='text-gray-700'>
             Bệnh viện
           </Label>
-          <Select
-            value={form.hospitalId || ''}
-            onValueChange={(value) => {
-              const hospital = hospitals.find((h) => h._id === value)
-              setForm((prev) => ({
-                ...prev,
-                hospitalId: value,
-                location: hospital?.name || ''
-              }))
-            }}
-            disabled={loadingHospitals}
-          >
-            <SelectTrigger className='mt-1.5'>
-              <SelectValue placeholder={loadingHospitals ? 'Đang tải...' : 'Chọn bệnh viện'} />
-            </SelectTrigger>
-            <SelectContent>
-              {hospitals.length === 0 && !loadingHospitals && (
-                <div className='px-4 py-2 text-gray-500'>Không có dữ liệu</div>
-              )}
-              {hospitals.map((h) => (
-                <SelectItem key={h._id} value={h._id}>
-                  {h.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className='relative'>
+            <Select
+              value={form.hospitalId || ''}
+              onValueChange={(value) => {
+                const hospital = hospitals.find((h) => h._id === value)
+                setForm((prev) => ({
+                  ...prev,
+                  hospitalId: value,
+                  location: hospital?.name || ''
+                }))
+              }}
+              disabled={loadingHospitals}
+            >
+              <SelectTrigger className='mt-1.5 w-full min-w-[180px]'>
+                <SelectValue placeholder={loadingHospitals ? 'Đang tải...' : 'Chọn bệnh viện'} />
+              </SelectTrigger>
+              <SelectContent className='w-full min-w-[180px]'>
+                {hospitals.length === 0 && !loadingHospitals && (
+                  <div className='px-4 py-2 text-gray-500'>Không có dữ liệu</div>
+                )}
+                {hospitals.map((h) => (
+                  <SelectItem key={h._id} value={h._id} className='truncate max-w-full'>
+                    {h.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div>
           <Label htmlFor='quantity' className='text-gray-700'>
@@ -251,47 +282,90 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
             name='quantity'
             type='number'
             min={1}
+            step={1}
+            pattern='[0-9]*'
             value={form.quantity}
             onChange={handleChange}
-            className='mt-1.5'
+            className='mt-1.5 w-full appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
             required
+            autoComplete='off'
+            placeholder='Nhập số lượng'
           />
         </div>
       </div>
 
-      <div>
-        <Label htmlFor='scheduleDate' className='text-gray-700'>
-          Ngày dự kiến
-        </Label>
-        <Input
-          id='scheduleDate'
-          name='scheduleDate'
-          type='date'
-          value={form.scheduleDate}
-          onChange={handleChange}
-          className='mt-1.5'
-          required
-        />
+      {/* 2 cột: Nhóm máu | Trạng thái */}
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+        <div>
+          <Label htmlFor='bloodType' className='text-gray-700'>
+            Nhóm máu
+          </Label>
+          <Select value={form.bloodType} onValueChange={(value) => setForm((prev) => ({ ...prev, bloodType: value }))}>
+            <SelectTrigger className='mt-1.5 w-full min-w-[120px]'>
+              <SelectValue placeholder='Chọn nhóm máu' />
+            </SelectTrigger>
+            <SelectContent className='w-full min-w-[120px]'>
+              {BLOOD_TYPES.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {type}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor='status' className='text-gray-700'>
+            Trạng thái
+          </Label>
+          <Select value={form.status || ''} onValueChange={(value) => setForm((prev) => ({ ...prev, status: value }))}>
+            <SelectTrigger className='mt-1.5 w-full min-w-[120px]'>
+              <SelectValue placeholder='Chọn trạng thái' />
+            </SelectTrigger>
+            <SelectContent className='w-full min-w-[120px]'>
+              <SelectItem value={DonationRequestStatus.SCHEDULED.toString()}>Chờ xử lý</SelectItem>
+              <SelectItem value={DonationRequestStatus.COMPLETED.toString()}>Hoàn thành</SelectItem>
+              <SelectItem value={DonationRequestStatus.CANCELLED.toString()}>Đã hủy</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      <div>
-        <Label htmlFor='note' className='text-gray-700'>
-          Ghi chú
-        </Label>
-        <Textarea
-          id='note'
-          name='note'
-          value={form.note}
-          onChange={handleChange}
-          rows={3}
-          className='mt-1.5 resize-none'
-          placeholder='Nhập ghi chú (nếu có)'
-        />
+      {/* Ngày dự kiến & Ghi chú */}
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+        <div>
+          <Label htmlFor='scheduleDate' className='text-gray-700'>
+            Ngày dự kiến <span className='text-xs text-gray-400'>(dd/mm/yyyy)</span>
+          </Label>
+          <Input
+            id='scheduleDate'
+            name='scheduleDate'
+            type='date'
+            value={form.scheduleDate}
+            onChange={handleChange}
+            className='mt-1.5 w-full'
+            required
+          />
+        </div>
+        <div>
+          <Label htmlFor='note' className='text-gray-700'>
+            Ghi chú
+          </Label>
+          <Textarea
+            id='note'
+            name='note'
+            value={form.note}
+            onChange={handleChange}
+            rows={3}
+            className='mt-1.5 w-full resize-none'
+            placeholder='Nhập ghi chú (nếu có)'
+          />
+        </div>
       </div>
 
+      {/* Ưu tiên */}
       <div>
         <Label className='text-gray-700'>Ưu tiên</Label>
-        <div className='grid grid-cols-3 gap-4 mt-2'>
+        <div className='grid grid-cols-2 md:grid-cols-3 gap-4 mt-2'>
           {PRIORITIES.map((p) => (
             <label
               key={p.value}

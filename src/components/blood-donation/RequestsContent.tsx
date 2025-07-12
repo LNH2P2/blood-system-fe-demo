@@ -8,11 +8,19 @@ import { getStatusBadge, getPriorityBadge, getStatusColor } from './utils'
 import RequestDetail from './RequestDetail'
 import CreateRequestForm from './CreateRequestForm'
 import { useEffect, useState } from 'react'
-import { getDonationRequestsForHospital } from '@/lib/apis/blood-donation.api'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { useDonationRequestsForHospital } from '@/hooks/use-api/use-blood-donation'
 
 interface RequestsContentProps {
   requests: BloodRequest[]
+}
+
+interface DonationRequestsResponse {
+  status: number
+  payload: {
+    data: BloodRequest[]
+    [key: string]: any
+  }
 }
 
 export default function RequestsContent({ requests: initialRequests }: RequestsContentProps) {
@@ -21,18 +29,19 @@ export default function RequestsContent({ requests: initialRequests }: RequestsC
   const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
 
+  const { data: donationRequestsData, isLoading: loadingRequests } = useDonationRequestsForHospital({
+    page: 1,
+    limit: 20
+  })
+
   useEffect(() => {
-    // Gọi API lấy danh sách yêu cầu hiến máu cho bệnh viện
-    getDonationRequestsForHospital({ page: 1, limit: 20 })
-      .then((res) => {
-        // Giả sử res.payload.data là mảng kết quả
-        setRequests(res.payload.data)
-      })
-      .catch((err) => {
-        // Xử lý lỗi nếu cần
-        setRequests([])
-      })
-  }, [])
+    const data = donationRequestsData as DonationRequestsResponse | undefined
+    if (data && Array.isArray(data.payload?.data)) {
+      setRequests(data.payload.data)
+    } else {
+      setRequests([])
+    }
+  }, [donationRequestsData])
 
   const handleViewDetail = (request: BloodRequest) => {
     setSelectedRequest(request)
