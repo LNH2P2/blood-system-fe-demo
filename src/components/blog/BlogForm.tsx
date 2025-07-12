@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { FileText, Save,  Image } from 'lucide-react'
+import { FileText, Save, Image } from 'lucide-react'
 import { Blog, BlogStatus, CreateBlogDto, UpdateBlogDto } from '@/types/blog'
 import { blogApi } from '@/lib/apis/blog.api'
 
@@ -18,7 +18,7 @@ interface BlogFormProps {
   onSuccess: () => void
 }
 
-export default function BlogForm({ blog, isOpen, onClose, onSuccess }: BlogFormProps) {
+export default function BlogForm({ blog, isOpen, onClose, onSuccess }: Readonly<BlogFormProps>) {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
@@ -146,6 +146,19 @@ export default function BlogForm({ blog, isOpen, onClose, onSuccess }: BlogFormP
     }
   }
 
+  const getStatusCardStyle = (status: BlogStatus) => {
+    switch (status) {
+      case BlogStatus.PUBLISHED:
+        return 'border-green-500 bg-green-50'
+      case BlogStatus.DRAFT:
+        return 'border-yellow-500 bg-yellow-50'
+      case BlogStatus.ARCHIVED:
+        return 'border-gray-500 bg-gray-50'
+      default:
+        return 'border-gray-500 bg-gray-50'
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
@@ -215,11 +228,13 @@ export default function BlogForm({ blog, isOpen, onClose, onSuccess }: BlogFormP
                       className='border-gray-300 focus:border-red-500 focus:ring-red-500'
                     />
                     <Button type='button' variant='outline' size='sm' className='px-3'>
+                      {/* eslint-disable-next-line jsx-a11y/alt-text */}
                       <Image className='h-4 w-4' />
                     </Button>
                   </div>
                   {formData.image && (
                     <div className='mt-2'>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={formData.image}
                         alt='Preview'
@@ -305,15 +320,7 @@ export default function BlogForm({ blog, isOpen, onClose, onSuccess }: BlogFormP
                       </Select>
                     </div>
 
-                    <div
-                      className={`p-3 rounded-lg border-l-4 ${
-                        formData.status === BlogStatus.PUBLISHED
-                          ? 'border-green-500 bg-green-50'
-                          : formData.status === BlogStatus.DRAFT
-                          ? 'border-yellow-500 bg-yellow-50'
-                          : 'border-gray-500 bg-gray-50'
-                      }`}
-                    >
+                    <div className={`p-3 rounded-lg border-l-4 ${getStatusCardStyle(formData.status)}`}>
                       <h4 className={`font-medium ${getStatusColor(formData.status)}`}>
                         {getStatusLabel(formData.status)}
                       </h4>

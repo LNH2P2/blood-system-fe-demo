@@ -373,7 +373,7 @@ export default function BlogContent({
 
             <div className='lg:col-span-3'>
               <Select
-                value={currentFilters?.status || 'all'}
+                value={currentFilters?.status ?? 'all'}
                 onValueChange={(value) => {
                   const status = value === 'all' ? undefined : (value as BlogStatus)
                   onQuickStatusFilter?.(status)

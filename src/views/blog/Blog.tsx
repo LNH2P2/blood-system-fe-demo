@@ -36,7 +36,7 @@ export default function BlogPageView() {
   // Debounced search effect
   useEffect(() => {
     const delayTimer = setTimeout(() => {
-      if (searchTerm !== (filters.q || '')) {
+      if (searchTerm !== (filters.q ?? '')) {
         handleFiltersChange({
           q: searchTerm || undefined,
           page: 1
@@ -45,10 +45,12 @@ export default function BlogPageView() {
     }, 500) // 500ms debounce
 
     return () => clearTimeout(delayTimer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm])
 
   useEffect(() => {
     loadBlogs()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters])
 
   const loadBlogs = async () => {
@@ -91,7 +93,7 @@ export default function BlogPageView() {
       ...prev,
       ...newFilters,
       // Reset to page 1 when filters change (except pagination changes)
-      page: newFilters.page !== undefined ? newFilters.page : 1
+      page: newFilters.page ?? 1
     }))
   }, [])
 

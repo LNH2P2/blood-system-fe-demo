@@ -9,10 +9,10 @@ export const blogApi = {
     const queryParams = new URLSearchParams()
 
     // Only add parameters that have actual values
-    if (filters?.status && filters.status.trim()) {
+    if (filters?.status?.trim()) {
       queryParams.append('status', filters.status)
     }
-    if (filters?.q && filters.q.trim()) {
+    if (filters?.q?.trim()) {
       queryParams.append('q', filters.q.trim())
     }
     if (filters?.order) {
