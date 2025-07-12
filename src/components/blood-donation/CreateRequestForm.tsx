@@ -1,13 +1,13 @@
 'use client'
-
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { AlertTriangle, Zap, Activity, Heart, Search, Plus, User } from 'lucide-react'
+import { AlertTriangle, Zap, Activity, Heart, Search, Plus, User, Loader2 } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card } from '@/components/ui/card'
+import http from '@/lib/http'
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
 const PRIORITIES = [
@@ -46,28 +46,43 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
   const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [showCreateNew, setShowCreateNew] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
 
   const handleSearch = (value: string) => {
     setSearchTerm(value)
-    // TODO: Implement actual search API call
-    // For now, just mock some results
-    if (value.length > 0) {
-      setSearchResults([
-        { id: '1', name: 'Nguyễn Văn A', phone: '0912345678', email: 'nguyenvana@gmail.com', type: 'donor' },
-        { id: '2', name: 'Trần Thị B', phone: '0923456789', email: 'tranthib@gmail.com', type: 'recipient' }
-      ])
-      setShowCreateNew(true)
-    } else {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (!value) {
       setSearchResults([])
       setShowCreateNew(false)
+      setLoading(false)
+      return
     }
+    setLoading(true)
+    debounceRef.current = setTimeout(async () => {
+      try {
+        // Gọi API tìm user
+        const res = await fetch(`http://localhost:3000/api/users?current=1&limit=10&qs=${encodeURIComponent(value)}`)
+        const data = await res.json()
+        console.log('data:', data)
+        // Giả sử data.payload.data là mảng kết quả
+        const users = data?.data.data.result || []
+        setSearchResults(users)
+        setShowCreateNew(true)
+      } catch (e) {
+        setSearchResults([])
+        setShowCreateNew(true)
+      } finally {
+        setLoading(false)
+      }
+    }, 400)
   }
 
   const handleSelectRecipient = (recipient: any) => {
     setForm((prev) => ({
       ...prev,
-      recipientId: recipient.id,
-      recipientInfo: `${recipient.name} - ${recipient.phone}`
+      recipientId: recipient.id || recipient._id,
+      recipientInfo: `${recipient.fullName || recipient.name} - ${recipient.phone || recipient.phoneNumber || ''}`
     }))
     setSearchResults([])
     setSearchTerm('')
@@ -101,31 +116,38 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
               onChange={(e) => handleSearch(e.target.value)}
               className='pl-10 pr-4 mt-1.5'
               placeholder='Tìm theo tên, số điện thoại hoặc email'
+              autoComplete='off'
             />
+            {loading && (
+              <Loader2 className='absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-gray-400' />
+            )}
           </div>
 
           {/* Search Results Dropdown */}
-          {searchResults.length > 0 && (
+          {(searchResults.length > 0 || showCreateNew) && searchTerm && (
             <Card className='absolute z-10 w-full mt-1 border shadow-lg bg-white rounded-md overflow-hidden'>
               <div className='max-h-60 overflow-auto'>
-                {searchResults.map((result) => (
+                {searchResults.map((result: any) => (
                   <button
-                    key={result.id}
+                    key={result.id || result._id}
                     type='button'
                     className='w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-3'
                     onClick={() => handleSelectRecipient(result)}
                   >
                     <User className='h-5 w-5 text-gray-400' />
                     <div>
-                      <div className='font-medium'>{result.name}</div>
+                      <div className='font-medium'>{result.fullName || result.name}</div>
                       <div className='text-sm text-gray-500'>
-                        {result.phone} • {result.email}
+                        {(result.phone || result.phoneNumber || '') + (result.email ? ` • ${result.email}` : '')}
                       </div>
                     </div>
                   </button>
                 ))}
+                {!loading && searchResults.length === 0 && (
+                  <div className='px-4 py-3 text-gray-500 text-sm'>Không tìm thấy người phù hợp.</div>
+                )}
               </div>
-              {showCreateNew && (
+              {showCreateNew && !loading && (
                 <div className='border-t p-2'>
                   <Button
                     type='button'
