@@ -2,19 +2,37 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { MapPin, Clock, Filter, Plus, Heart, AlertTriangle, Zap, Activity, Hospital } from 'lucide-react'
+import { MapPin, Clock, Filter, Plus, Heart, AlertTriangle, Zap, Activity, Hospital, User } from 'lucide-react'
 import { BloodRequest } from './types'
 import { getStatusBadge, getPriorityBadge, getStatusColor } from './utils'
 import RequestDetail from './RequestDetail'
-import { useState } from 'react'
+import CreateRequestForm from './CreateRequestForm'
+import { useEffect, useState } from 'react'
+import { getDonationRequestsForHospital } from '@/lib/apis/blood-donation.api'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 interface RequestsContentProps {
   requests: BloodRequest[]
 }
 
-export default function RequestsContent({ requests }: RequestsContentProps) {
+export default function RequestsContent({ requests: initialRequests }: RequestsContentProps) {
+  const [requests, setRequests] = useState<BloodRequest[]>(initialRequests)
   const [selectedRequest, setSelectedRequest] = useState<BloodRequest | null>(null)
   const [isDetailOpen, setIsDetailOpen] = useState(false)
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
+
+  useEffect(() => {
+    // Gọi API lấy danh sách yêu cầu hiến máu cho bệnh viện
+    getDonationRequestsForHospital({ page: 1, limit: 20 })
+      .then((res) => {
+        // Giả sử res.payload.data là mảng kết quả
+        setRequests(res.payload.data)
+      })
+      .catch((err) => {
+        // Xử lý lỗi nếu cần
+        setRequests([])
+      })
+  }, [])
 
   const handleViewDetail = (request: BloodRequest) => {
     setSelectedRequest(request)
@@ -199,7 +217,7 @@ export default function RequestsContent({ requests }: RequestsContentProps) {
                 <Filter className='h-4 w-4 mr-2' />
                 Lọc
               </Button>
-              <Button size='sm' className='bg-red-600 hover:bg-red-700'>
+              <Button size='sm' className='bg-red-600 hover:bg-red-700' onClick={() => setIsCreateOpen(true)}>
                 <Plus className='h-4 w-4 mr-2' />
                 Tạo yêu cầu mới
               </Button>
@@ -222,9 +240,15 @@ export default function RequestsContent({ requests }: RequestsContentProps) {
                         <div className='transition-transform group-hover:scale-110'>
                           {getPriorityIcon(request.priority)}
                         </div>
-                        <h4 className='font-semibold text-lg text-gray-800 group-hover:text-red-600 transition-colors'>
-                          {request.hospital}
-                        </h4>
+                        <div>
+                          <h4 className='font-semibold text-lg text-gray-800 group-hover:text-red-600 transition-colors'>
+                            {request.hospital}
+                          </h4>
+                          <span className='text-xs text-gray-500 italic flex items-center mt-1'>
+                            <User className='h-3 w-3 mr-1' />
+                            Người tạo: {request.createdBy}
+                          </span>
+                        </div>
                       </div>
                       <Badge
                         variant={getPriorityBadge(request.priority)}
@@ -322,6 +346,21 @@ export default function RequestsContent({ requests }: RequestsContentProps) {
 
       {/* Request Detail Modal */}
       {selectedRequest && <RequestDetail request={selectedRequest} isOpen={isDetailOpen} onClose={handleCloseDetail} />}
+
+      {/* Create Request Modal (shadcn Dialog) */}
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent className='max-w-2xl w-full p-0 overflow-hidden'>
+          <DialogHeader className='bg-white px-6 py-4 border-b'>
+            <DialogTitle className='text-xl font-bold text-red-600 flex items-center gap-2'>
+              <Heart className='h-6 w-6' />
+              Tạo yêu cầu hiến máu
+            </DialogTitle>
+          </DialogHeader>
+          <div className='bg-gray-50/50'>
+            <CreateRequestForm onSubmit={() => setIsCreateOpen(false)} />
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Footer Information */}
       <Card className='bg-gradient-to-r from-gray-50 to-gray-100 border-0'>

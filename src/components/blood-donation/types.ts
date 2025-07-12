@@ -7,6 +7,7 @@ export interface BloodRequest {
   time: string
   status: string
   location: string
+  createdBy: string // Thông tin người tạo yêu cầu
 }
 
 export interface BloodInventory {
