@@ -74,9 +74,8 @@ export default function BlogContent({
   setSearchTerm,
   searchLoading = false,
   currentFilters,
-  loading,
   pagination
-}: BlogContentProps) {
+}: Readonly<BlogContentProps>) {
   const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null)
   const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -204,12 +203,28 @@ export default function BlogContent({
     }
   }
 
+  const formatViewCount = (count: number): string => {
+    if (count >= 1000000) {
+      return (count / 1000000).toFixed(1) + 'M'
+    } else if (count >= 1000) {
+      return (count / 1000).toFixed(1) + 'K'
+    }
+    return count.toString()
+  }
+
+  const getViewCountColor = (count: number): string => {
+    if (count >= 1000) return 'text-green-600 font-semibold'
+    if (count >= 100) return 'text-blue-600 font-medium'
+    return 'text-gray-600'
+  }
+
   const getStats = () => {
     const published = statusCounts.published
     const draft = statusCounts.draft
     const archived = statusCounts.archived
+    const totalViews = blogs.reduce((sum, blog) => sum + (blog.viewCount ?? 0), 0)
 
-    return { published, draft, archived }
+    return { published, draft, archived, totalViews }
   }
 
   const stats = getStats()
@@ -258,8 +273,8 @@ export default function BlogContent({
           <CardContent className='p-4'>
             <div className='flex items-center justify-between'>
               <div>
-                <p className='text-sm font-medium text-blue-600'>Tổng bài viết</p>
-                <p className='text-2xl font-bold text-blue-700'>{pagination?.totalRecords || blogs.length}</p>
+                <p className='text-sm font-medium text-blue-600'>Tổng lượt xem</p>
+                <p className='text-2xl font-bold text-blue-700'>{formatViewCount(stats.totalViews)}</p>
               </div>
               <Eye className='h-6 w-6 text-blue-500' />
             </div>
@@ -296,7 +311,7 @@ export default function BlogContent({
             </div>
             <div className='text-right'>
               <div className='text-sm text-red-100'>Tổng bài viết</div>
-              <div className='text-2xl font-bold'>{pagination?.totalRecords || blogs.length}</div>
+              <div className='text-2xl font-bold'>{pagination?.totalRecords ?? blogs.length}</div>
             </div>
             <div className='text-right'>
               <div className='text-sm text-red-100'>Đã xuất bản</div>
@@ -378,7 +393,7 @@ export default function BlogContent({
 
             <div className='lg:col-span-3'>
               <Select
-                value={`${currentFilters?.order || 'desc'}`}
+                value={`${currentFilters?.order ?? 'desc'}`}
                 onValueChange={(value) => {
                   const order = value as BlogFilters['order']
                   onQuickSort?.(order)
@@ -487,10 +502,15 @@ export default function BlogContent({
                         variant={getStatusBadge(blog.status)}
                         className={`font-semibold ${getStatusColor(blog.status)}`}
                       >
-                        {blog.status || 'draft'}
+                        {blog.status ?? 'draft'}
                       </Badge>
+                      {(blog.viewCount ?? 0) > 50 && (
+                        <Badge variant='outline' className='bg-yellow-50 text-yellow-700 border-yellow-300'>
+                          🔥 Phổ biến
+                        </Badge>
+                      )}
                     </div>
-                    <div className='grid grid-cols-2 gap-6 text-sm mb-3'>
+                    <div className='grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-3'>
                       <div className='flex items-center space-x-2 text-gray-600'>
                         <Calendar className='h-4 w-4 text-green-500' />
                         <span>Tạo: {new Date(blog.createdAt).toLocaleDateString('vi-VN')}</span>
@@ -498,6 +518,12 @@ export default function BlogContent({
                       <div className='flex items-center space-x-2 text-gray-600'>
                         <Calendar className='h-4 w-4 text-orange-500' />
                         <span>Cập nhật: {new Date(blog.updatedAt).toLocaleDateString('vi-VN')}</span>
+                      </div>
+                      <div className='flex items-center space-x-2 text-gray-600'>
+                        <Eye className='h-4 w-4 text-blue-500' />
+                        <span className={getViewCountColor(blog.viewCount ?? 0)}>
+                          Lượt xem: {formatViewCount(blog.viewCount ?? 0)}
+                        </span>
                       </div>
                     </div>
                     <p className='text-gray-600 text-sm line-clamp-2'>{blog.summary}</p>

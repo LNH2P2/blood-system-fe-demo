@@ -11,7 +11,7 @@ export interface Blog {
   summary: string
   content: string
   status?: BlogStatus
-  category?: string
+  viewCount?: number
   createdAt: string
   updatedAt: string
   __v?: number
