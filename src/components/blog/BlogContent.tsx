@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
 import {
   Dialog,
   DialogContent,
@@ -24,7 +25,8 @@ import {
   Archive,
   ChevronLeft,
   ChevronRight,
-  AlertTriangle
+  AlertTriangle,
+  Search
 } from 'lucide-react'
 import { Blog, BlogStatus, BlogFilters } from '@/types/blog'
 import { blogApi } from '@/lib/apis/blog.api'
@@ -43,6 +45,12 @@ interface BlogContentProps {
   setBlogs: (blogs: Blog[]) => void
   onRefresh: () => void
   onFiltersChange: (filters: BlogFilters) => void
+  onQuickStatusFilter?: (status?: BlogFilters['status']) => void
+  onQuickSort?: (order?: BlogFilters['order']) => void
+  searchTerm?: string
+  setSearchTerm?: (term: string) => void
+  searchLoading?: boolean
+  currentFilters?: BlogFilters
   loading: boolean
   pagination?: {
     currentPage: number
@@ -59,6 +67,12 @@ export default function BlogContent({
   setBlogs,
   onRefresh,
   onFiltersChange,
+  onQuickStatusFilter,
+  onQuickSort,
+  searchTerm = '',
+  setSearchTerm,
+  searchLoading = false,
+  currentFilters,
   loading,
   pagination
 }: BlogContentProps) {
@@ -270,45 +284,134 @@ export default function BlogContent({
         </div>
       </div>
 
-      {/* Blog List */}
+      {/* Enhanced Fast Filters */}
       <Card className='shadow-lg border-0'>
-        <CardHeader className='bg-gray-50/50'>
-          <div className='flex items-center justify-between'>
+        <CardHeader className='bg-gray-50/50 pb-4'>
+          <div className='flex items-center justify-between mb-4'>
             <div className='flex items-center space-x-3'>
-              <FileText className='h-5 w-5 text-red-600' />
+              <Filter className='h-5 w-5 text-red-600' />
               <div>
-                <CardTitle className='text-gray-800'>Danh sách bài viết</CardTitle>
-                <CardDescription>Quản lý và chỉnh sửa các bài viết blog</CardDescription>
+                <CardTitle className='text-gray-800'>Tìm kiếm và lọc nhanh</CardTitle>
+                <CardDescription>Tìm kiếm và lọc bài viết một cách nhanh chóng</CardDescription>
               </div>
             </div>
-            <div className='flex items-center space-x-3'>
+            <Button size='sm' className='bg-red-600 hover:bg-red-700' onClick={handleCreate}>
+              <Plus className='h-4 w-4 mr-2' />
+              Tạo bài viết mới
+            </Button>
+          </div>
+
+          {/* Search Row */}
+          <div className='grid grid-cols-1 lg:grid-cols-12 gap-4 mb-4'>
+            <div className='lg:col-span-6'>
+              <div className='relative'>
+                <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400' />
+                <Input
+                  placeholder='Tìm kiếm bài viết (tiêu đề, nội dung)...'
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm?.(e.target.value)}
+                  className='pl-10 border-gray-200 focus:border-red-500'
+                />
+                {searchLoading && (
+                  <div className='absolute right-3 top-1/2 transform -translate-y-1/2'>
+                    <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-red-600'></div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className='lg:col-span-3'>
               <Select
+                value={currentFilters?.status || 'all'}
                 onValueChange={(value) => {
-                  const filterStatus = value === 'all' ? undefined : (value as BlogStatus)
-                  onFiltersChange({ status: filterStatus })
+                  const status = value === 'all' ? undefined : (value as BlogStatus)
+                  onQuickStatusFilter?.(status)
                 }}
               >
-                <SelectTrigger className='w-48 border-red-200 focus:border-red-500'>
-                  <SelectValue placeholder='Lọc theo trạng thái' />
+                <SelectTrigger className='border-gray-200 focus:border-red-500'>
+                  <SelectValue placeholder='Trạng thái' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value='all'>Tất cả</SelectItem>
+                  <SelectItem value='all'>Tất cả trạng thái</SelectItem>
                   <SelectItem value={BlogStatus.PUBLISHED}>Đã xuất bản</SelectItem>
                   <SelectItem value={BlogStatus.DRAFT}>Bản nháp</SelectItem>
                   <SelectItem value={BlogStatus.ARCHIVED}>Đã lưu trữ</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant='outline' size='sm' className='border-red-200 text-red-700 hover:bg-red-50'>
-                <Filter className='h-4 w-4 mr-2' />
-                Lọc
-              </Button>
-              <Button size='sm' className='bg-red-600 hover:bg-red-700' onClick={handleCreate}>
-                <Plus className='h-4 w-4 mr-2' />
-                Tạo bài viết mới
-              </Button>
+            </div>
+
+            <div className='lg:col-span-3'>
+              <Select
+                value={`${currentFilters?.order || 'desc'}`}
+                onValueChange={(value) => {
+                  const order = value as BlogFilters['order']
+                  onQuickSort?.(order)
+                }}
+              >
+                <SelectTrigger className='border-gray-200 focus:border-red-500'>
+                  <SelectValue placeholder='Sắp xếp' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='desc'>Mới nhất</SelectItem>
+                  <SelectItem value='asc'>Cũ nhất</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
+
+          {/* Quick Filter Chips */}
+          <div className='flex flex-wrap gap-2'>
+            <Button
+              variant={!currentFilters?.status ? 'default' : 'outline'}
+              size='sm'
+              onClick={() => onQuickStatusFilter?.()}
+              className={!currentFilters?.status ? 'bg-red-600 hover:bg-red-700' : 'border-gray-200 hover:bg-gray-50'}
+            >
+              Tất cả ({statusCounts.draft + statusCounts.published + statusCounts.archived})
+            </Button>
+            <Button
+              variant={currentFilters?.status === BlogStatus.PUBLISHED ? 'default' : 'outline'}
+              size='sm'
+              onClick={() => onQuickStatusFilter?.(BlogStatus.PUBLISHED)}
+              className={
+                currentFilters?.status === BlogStatus.PUBLISHED
+                  ? 'bg-green-600 hover:bg-green-700'
+                  : 'border-green-200 text-green-700 hover:bg-green-50'
+              }
+            >
+              <FileText className='h-3 w-3 mr-1' />
+              Đã xuất bản ({statusCounts.published})
+            </Button>
+            <Button
+              variant={currentFilters?.status === BlogStatus.DRAFT ? 'default' : 'outline'}
+              size='sm'
+              onClick={() => onQuickStatusFilter?.(BlogStatus.DRAFT)}
+              className={
+                currentFilters?.status === BlogStatus.DRAFT
+                  ? 'bg-yellow-600 hover:bg-yellow-700'
+                  : 'border-yellow-200 text-yellow-700 hover:bg-yellow-50'
+              }
+            >
+              <Edit className='h-3 w-3 mr-1' />
+              Bản nháp ({statusCounts.draft})
+            </Button>
+            <Button
+              variant={currentFilters?.status === BlogStatus.ARCHIVED ? 'default' : 'outline'}
+              size='sm'
+              onClick={() => onQuickStatusFilter?.(BlogStatus.ARCHIVED)}
+              className={
+                currentFilters?.status === BlogStatus.ARCHIVED
+                  ? 'bg-gray-600 hover:bg-gray-700'
+                  : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+              }
+            >
+              <Archive className='h-3 w-3 mr-1' />
+              Đã lưu trữ ({statusCounts.archived})
+            </Button>
+          </div>
         </CardHeader>
+
+        {/* Blog List */}
         <CardContent className='p-0'>
           <div className='space-y-1'>
             {blogs.map((blog, index) => (
@@ -405,7 +508,11 @@ export default function BlogContent({
             <div className='text-center py-12'>
               <FileText className='h-12 w-12 text-gray-400 mx-auto mb-4' />
               <h3 className='text-lg font-medium text-gray-900 mb-2'>Chưa có bài viết nào</h3>
-              <p className='text-gray-600 mb-4'>Bắt đầu tạo bài viết đầu tiên của bạn</p>
+              <p className='text-gray-600 mb-4'>
+                {searchTerm || currentFilters?.status
+                  ? 'Không tìm thấy bài viết nào phù hợp với tìm kiếm/bộ lọc hiện tại'
+                  : 'Bắt đầu tạo bài viết đầu tiên của bạn'}
+              </p>
               <Button onClick={handleCreate} className='bg-red-600 hover:bg-red-700'>
                 <Plus className='h-4 w-4 mr-2' />
                 Tạo bài viết mới

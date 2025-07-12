@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { FileText, Save, X, Image } from 'lucide-react'
+import { FileText, Save, Image } from 'lucide-react'
 import { Blog, BlogStatus, CreateBlogDto, UpdateBlogDto } from '@/types/blog'
 import { blogApi } from '@/lib/apis/blog.api'
 

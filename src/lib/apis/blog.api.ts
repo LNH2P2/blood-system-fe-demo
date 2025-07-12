@@ -4,19 +4,36 @@ import { Blog, CreateBlogDto, UpdateBlogDto, BlogListResponse, BlogFilters } fro
 const BASE_PATH = '/blog'
 
 export const blogApi = {
-  // Get all blogs with filters and pagination
+  // Get all blogs with filters and pagination - optimized
   getBlogs(filters?: BlogFilters) {
     const queryParams = new URLSearchParams()
 
-    if (filters?.status) queryParams.append('status', filters.status)
-    if (filters?.search) queryParams.append('search', filters.search)
-    if (filters?.sortBy) queryParams.append('sortBy', filters.sortBy)
-    if (filters?.sortOrder) queryParams.append('sortOrder', filters.sortOrder)
-    if (filters?.page) queryParams.append('page', filters.page.toString())
-    if (filters?.limit) queryParams.append('limit', filters.limit.toString())
+    // Only add parameters that have actual values
+    if (filters?.status && filters.status.trim()) {
+      queryParams.append('status', filters.status)
+    }
+    if (filters?.q && filters.q.trim()) {
+      queryParams.append('q', filters.q.trim())
+    }
+    if (filters?.order) {
+      queryParams.append('order', filters.order)
+    }
+    if (filters?.page && filters.page > 0) {
+      queryParams.append('page', filters.page.toString())
+    }
+    if (filters?.limit && filters.limit > 0) {
+      queryParams.append('limit', filters.limit.toString())
+    }
 
     const queryString = queryParams.toString()
     const url = queryString ? `${BASE_PATH}?${queryString}` : BASE_PATH
+
+    // Log for debugging performance
+    console.log('🚀 Blog API Request:', {
+      url,
+      filters: Object.keys(filters || {}).length > 0 ? filters : 'no filters',
+      queryParams: queryString || 'no params'
+    })
 
     return http.get<BlogListResponse>(url)
   },

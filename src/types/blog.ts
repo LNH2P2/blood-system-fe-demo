@@ -57,9 +57,8 @@ export interface BlogListResponse {
 
 export interface BlogFilters {
   status?: BlogStatus
-  search?: string
-  sortBy?: 'createdAt' | 'updatedAt' | 'title'
-  sortOrder?: 'asc' | 'desc'
+  q?: string // Changed from 'search' to 'q' to match backend
+  order?: 'asc' | 'desc' // Changed from 'sortOrder' to 'order' to match backend
   page?: number
   limit?: number
 }
