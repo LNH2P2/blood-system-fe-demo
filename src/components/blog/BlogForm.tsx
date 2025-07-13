@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { FileText, Save, Image } from 'lucide-react'
 import { Blog, BlogStatus, CreateBlogDto, UpdateBlogDto } from '@/types/blog'
 import { blogApi } from '@/lib/apis/blog.api'
+import { toast } from 'sonner'
 
 interface BlogFormProps {
   blog?: Blog | null
@@ -66,15 +67,15 @@ export default function BlogForm({ blog, isOpen, onClose, onSuccess }: Readonly<
 
   const validateForm = () => {
     if (!formData.title.trim()) {
-      alert('Vui lòng nhập tiêu đề bài viết')
+      toast.error('Vui lòng nhập tiêu đề bài viết')
       return false
     }
     if (!formData.summary.trim()) {
-      alert('Vui lòng nhập tóm tắt bài viết')
+      toast.error('Vui lòng nhập tóm tắt bài viết')
       return false
     }
     if (!formData.content.trim()) {
-      alert('Vui lòng nhập nội dung bài viết')
+      toast.error('Vui lòng nhập nội dung bài viết')
       return false
     }
     return true
@@ -88,6 +89,11 @@ export default function BlogForm({ blog, isOpen, onClose, onSuccess }: Readonly<
     try {
       setLoading(true)
 
+      const toastId = isEditing ? 'update-blog' : 'create-blog'
+      const loadingMessage = isEditing ? 'Đang cập nhật bài viết...' : 'Đang tạo bài viết...'
+
+      toast.loading(loadingMessage, { id: toastId })
+
       if (isEditing && blog) {
         const updateData: UpdateBlogDto = {
           title: formData.title,
@@ -97,6 +103,7 @@ export default function BlogForm({ blog, isOpen, onClose, onSuccess }: Readonly<
           status: formData.status
         }
         await blogApi.updateBlog(blog._id, updateData)
+        toast.success('Đã cập nhật bài viết thành công!', { id: toastId })
       } else {
         const createData: CreateBlogDto = {
           title: formData.title,
@@ -109,12 +116,19 @@ export default function BlogForm({ blog, isOpen, onClose, onSuccess }: Readonly<
         }
         const response = await blogApi.createBlog(createData)
         console.log('response of creating blog in BlogForm is: ', response)
+        toast.success('Đã tạo bài viết thành công!', { id: toastId })
       }
 
       onSuccess()
     } catch (error) {
       console.error('Error saving blog:', error)
-      alert(`Lỗi ${isEditing ? 'cập nhật' : 'tạo'} bài viết. Vui lòng thử lại.`)
+
+      const errorMessage = isEditing
+        ? 'Không thể cập nhật bài viết. Vui lòng thử lại.'
+        : 'Không thể tạo bài viết. Vui lòng thử lại.'
+
+      const toastId = isEditing ? 'update-blog' : 'create-blog'
+      toast.error(errorMessage, { id: toastId })
     } finally {
       setLoading(false)
     }

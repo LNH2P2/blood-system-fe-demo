@@ -31,6 +31,7 @@ import {
 } from 'lucide-react'
 import { Blog, BlogStatus, BlogFilters } from '@/types/blog'
 import { blogApi } from '@/lib/apis/blog.api'
+import { toast } from 'sonner'
 import BlogForm from './BlogForm'
 import BlogDetail from './BlogDetail'
 
@@ -130,14 +131,18 @@ export default function BlogContent({
 
     try {
       setIsDeleting(true)
+      toast.loading('Đang xóa bài viết...', { id: 'delete-blog' })
+
       await blogApi.deleteBlog(blogToDelete._id)
 
       setIsDeleteModalOpen(false)
       setBlogToDelete(null)
       setBlogs(blogs.filter((blog) => blog._id !== blogToDelete._id))
       onRefresh()
+      toast.success('Bài viết đã được xóa thành công!', { id: 'delete-blog' })
     } catch (error) {
       console.error('Error deleting blog:', error)
+      toast.error('Không thể xóa bài viết. Vui lòng thử lại.', { id: 'delete-blog' })
     } finally {
       setIsDeleting(false)
     }
@@ -147,8 +152,18 @@ export default function BlogContent({
     try {
       await blogApi.updateBlog(blog._id, { status: newStatus })
       onRefresh()
+
+      // More specific toast messages based on status
+      const statusMessages = {
+        [BlogStatus.PUBLISHED]: 'Bài viết đã được xuất bản thành công!',
+        [BlogStatus.DRAFT]: 'Bài viết đã chuyển về bản nháp!',
+        [BlogStatus.ARCHIVED]: 'Bài viết đã được lưu trữ thành công!'
+      }
+
+      toast.success(statusMessages[newStatus])
     } catch (error) {
       console.error('Error updating blog status:', error)
+      toast.error('Không thể cập nhật trạng thái bài viết.')
     }
   }
 
@@ -167,6 +182,9 @@ export default function BlogContent({
       order: undefined,
       page: 1
     })
+
+    // Provide user feedback
+    toast.success('Đã xóa tất cả bộ lọc')
 
     // Optional: trigger refresh to get fresh data
     // onRefresh()
