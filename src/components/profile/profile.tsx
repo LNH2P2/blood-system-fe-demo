@@ -13,11 +13,12 @@ import {
 } from '@/hooks/use-api/use-user'
 import { cn } from '@/lib/utils'
 import UserImage from '@/public/user.png'
+import { BloodTypeEnum } from '@/types/enum/user'
 import { addressSchema, updateUserSchema } from '@/types/user'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import Loading from '../loading/loading'
 import { Button } from '../ui/button'
@@ -49,7 +50,6 @@ export default function UserProfile({ userId }: { userId: string }) {
   const dateOfBirthRaw = form.watch('dateOfBirth')
   const dateOfBirth = dateOfBirthRaw ? new Date(dateOfBirthRaw) : undefined
   const isValidDate = dateOfBirth instanceof Date && !isNaN(dateOfBirth.getTime())
-
   useEffect(() => {
     if (user) {
       form.reset({
@@ -58,13 +58,15 @@ export default function UserProfile({ userId }: { userId: string }) {
         phoneNumber: user.payload.data.phoneNumber || '',
         gender: user.payload.data.gender,
         image: user.payload.data.image || '',
-        dateOfBirth: user.payload.data.dateOfBirth
+        dateOfBirth: user.payload.data.dateOfBirth,
+        bloodType: user.payload.data.bloodType || ''
       })
     }
   }, [user, form])
 
   const onSubmit = async (values: any) => {
     try {
+      console.log('Submitted values:', values)
       const original = user?.payload.data as Record<string, any>
       if (!original) return
 
@@ -246,6 +248,38 @@ export default function UserProfile({ userId }: { userId: string }) {
                 </Select>
                 {form.formState.errors.gender && (
                   <p className='text-sm text-red-500'>{form.formState.errors.gender.message}</p>
+                )}
+              </div>
+
+              <div>
+                <Controller
+                  name='bloodType'
+                  control={form.control}
+                  defaultValue={user?.payload.data.bloodType || ''}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value) // Update form state
+                        form.setValue('bloodType', value) // Ensure form state is updated
+                      }}
+                      disabled={!isEditing}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder='Nhóm máu' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {BloodTypeEnum.options.map((bt) => (
+                          <SelectItem key={bt} value={bt}>
+                            {bt}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {form.formState.errors.bloodType && (
+                  <p className='text-sm text-red-500'>{form.formState.errors.bloodType.message}</p>
                 )}
               </div>
 

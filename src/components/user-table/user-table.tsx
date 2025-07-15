@@ -4,13 +4,13 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { formatDate } from '@/hooks/format-date'
 import { useGetAllUsers } from '@/hooks/use-api/use-user'
-import { accountTypeValues } from '@/types/enum/auth'
+import getPageList from '@/lib/getPageList'
 import { debounce } from 'lodash'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useRouter } from '../../i18n/navigation'
 import Loading from '../loading/loading'
 
 export default function UserTable() {
@@ -27,11 +27,29 @@ export default function UserTable() {
   const [currentPage, setCurrentPage] = useState(initialPage)
   const [limit, setLimit] = useState(initialLimit)
 
-  const buildQueryString = (qs: string, type: string) => {
-    const query: Record<string, string> = {}
-    if (qs) query['fullName'] = `/${qs}/i`
-    if (type && type !== 'all') query['accountType'] = type
-    return new URLSearchParams(query).toString()
+  useEffect(() => {
+    // bất cứ khi nào searchParams thay đổi (nút back/forward)
+    const sp = new URLSearchParams(window.location.search)
+    setCurrentPage(parseInt(sp.get('page') || '1', 10))
+    setSearch(sp.get('search') || '')
+    setAccountType(sp.get('accountType') || '')
+    setLimit(parseInt(sp.get('limit') || '10', 10))
+  }, [searchParams])
+  const buildQueryString = (search: string, type: string) => {
+    const filter: Record<string, any> = {}
+
+    // a) tìm theo tên hoặc số điện thoại
+    if (search) {
+      filter.$or = [{ fullName: { $regex: search, $options: 'i' } }, { phoneNumber: { $regex: search, $options: 'i' } }]
+    }
+
+    // b) lọc theo loại tài khoản (nếu có)
+    if (type && type !== 'all') filter.accountType = type
+
+    /* => Trả về filter=<JSON đã encodeURI> */
+    return new URLSearchParams({
+      filter: JSON.stringify(filter)
+    }).toString()
   }
 
   const { data, isLoading } = useGetAllUsers({
@@ -81,34 +99,29 @@ export default function UserTable() {
   }
 
   return (
-    <div className='px-6 py-6 max-w-7xl mx-auto'>
+    <div className='w-full'>
       {data && (
-        <Card className='shadow-md border  bg-white rounded-xl'>
+        <Card className='shadow-md border bg-white rounded-xl'>
           <CardHeader>
             <CardTitle className='text-[#d62828] text-xl'>Danh sách người dùng</CardTitle>
+            {/* Red Warning Banner */}
+            <div className='bg-[#d62828] text-white p-2 rounded mt-2 flex items-center'>
+              <span className='flex items-center'>
+                <span className='text-lg mr-2'>❤️</span>
+                đây là một bảng điều khiển dùng để quản lý người dùng trong hệ thống hiến máu.
+              </span>
+            </div>
           </CardHeader>
           <CardContent className='space-y-4'>
-            <div className='flex flex-col md:flex-row gap-4 items-center'>
+            <div className='flex flex-col sm:flex-row gap-4 items-center'>
               <Input
-                placeholder='Tìm kiếm theo tên...'
+                placeholder='Tìm kiếm theo tên hoặc SĐT...'
                 onChange={handleSearchChange}
                 defaultValue={search}
-                className='w-full md:w-1/3'
+                className='w-full sm:w-1/3 border rounded p-2'
               />
-              <Select onValueChange={handleFilterChange} defaultValue={initialAccountType || 'all'}>
-                <SelectTrigger className='w-full md:w-64'>
-                  <SelectValue placeholder='Lọc theo phương thức đăng ký' />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='all'>Tất cả</SelectItem>
-                  {accountTypeValues.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button variant='outline' onClick={handleResetFilters}>
+
+              <Button variant='outline' onClick={handleResetFilters} className='border rounded p-2'>
                 Đặt lại bộ lọc
               </Button>
             </div>
@@ -150,7 +163,7 @@ export default function UserTable() {
               </table>
             </div>
 
-            <div className='flex justify-between items-center pt-4'>
+            <div className='flex flex-col sm:flex-row justify-between items-center pt-4 gap-4'>
               {data.payload.data.data.result.length !== 0 && (
                 <p className='text-sm text-gray-600'>
                   Trang {data.payload.data.data.meta.current} / {data.payload.data.data.meta.pages} (Tổng:{' '}
@@ -163,17 +176,42 @@ export default function UserTable() {
                   disabled={current <= 1}
                   onClick={() => {
                     const newPage = current - 1
+                    setCurrentPage(newPage) // <- thêm dòng này
                     updateUrlParams(search, accountType, newPage, limit)
                   }}
                 >
                   Trước
                 </Button>
 
+                {/* Pagination numbers */}
+                {getPageList(totalPages, current).map((p, i) =>
+                  p === '...' ? (
+                    <span key={i + 1} className='px-2'>
+                      …
+                    </span>
+                  ) : (
+                    <Button
+                      key={p as number}
+                      size='sm'
+                      variant={p === current ? 'default' : 'outline'}
+                      onClick={() => {
+                        const newPage = p as number
+                        setCurrentPage(newPage)
+                        updateUrlParams(search, accountType, newPage, limit)
+                      }}
+                      className='w-8 h-8 p-0'
+                    >
+                      {p}
+                    </Button>
+                  )
+                )}
+
                 <Button
                   variant='outline'
                   disabled={current >= totalPages}
                   onClick={() => {
                     const newPage = current + 1
+                    setCurrentPage(newPage) // <- thêm dòng này
                     updateUrlParams(search, accountType, newPage, limit)
                   }}
                 >
