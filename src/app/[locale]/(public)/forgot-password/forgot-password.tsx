@@ -7,11 +7,13 @@ import { Label } from '@/components/ui/label'
 import { useResetPassword, useSendOtpResetPassword } from '@/hooks/use-api/use-auth'
 import { resetPasswordSchema, sendOtpSchema } from '@/types/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter, useSearchParams } from 'next/navigation'
+
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { useRouter } from '../../../../i18n/navigation'
+import { useSearchParams } from 'next/navigation'
 
 type StepOneDto = z.infer<typeof sendOtpSchema>
 type StepTwoDto = z.infer<typeof resetPasswordSchema>
@@ -66,7 +68,7 @@ export default function ForgotPassword() {
     try {
       await sendOtpMutation.mutateAsync(data.email)
       toast.success('Đã gửi mã OTP đến email của bạn.')
-      router.push(`/vi/forgot-password?email=${encodeURIComponent(data.email)}`)
+      router.push(`/forgot-password?email=${encodeURIComponent(data.email)}`)
     } catch {
       toast.error('Không thể gửi OTP. Vui lòng thử lại.')
     }
@@ -76,14 +78,14 @@ export default function ForgotPassword() {
     try {
       await resetPasswordMutation.mutateAsync({ ...data, email: emailFromUrl })
       toast.success('Đặt lại mật khẩu thành công!')
-      router.push('/vi/login')
+      router.push('/login')
     } catch {
       toast.error('Đặt lại mật khẩu thất bại.')
     }
   }
 
   const handleLogin = () => {
-    router.push('/vi/login')
+    router.push('/login')
   }
   return (
     <div className='min-h-screen flex items-center justify-center bg-[#fef2f2] px-4'>

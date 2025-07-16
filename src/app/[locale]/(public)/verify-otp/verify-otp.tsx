@@ -7,11 +7,12 @@ import { Label } from '@/components/ui/label'
 import { useResendOtp, useVerifyOtp } from '@/hooks/use-api/use-auth'
 import { verifyOtpSchema } from '@/types/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { useRouter } from '../../../../i18n/navigation'
 
 const schema = verifyOtpSchema
 type FormData = z.infer<typeof schema>
@@ -34,7 +35,7 @@ export default function VerifyOtp() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting }
+    formState: { errors, isSubmitting, isLoading }
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -48,7 +49,7 @@ export default function VerifyOtp() {
       await verifyOtpMutation.mutateAsync(data)
       toast.success('Xác minh thành công! Bạn có thể đăng nhập.')
       // Có thể chuyển sang trang đăng nhập tại đây nếu muốn
-      router.push('/v1/login')
+      router.push('/login')
     } catch (error) {
       console.log('Error during OTP verification:', error)
       toast.error('Xác minh thất bại. Vui lòng kiểm tra mã OTP.')
@@ -107,7 +108,7 @@ export default function VerifyOtp() {
               <button
                 type='button'
                 onClick={handleResend}
-                disabled={cooldown > 0}
+                disabled={cooldown > 0 || isLoading}
                 className={`${
                   cooldown > 0
                     ? 'text-gray-400 cursor-not-allowed'

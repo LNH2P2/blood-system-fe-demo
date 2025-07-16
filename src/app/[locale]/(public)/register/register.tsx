@@ -6,16 +6,16 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useRegister } from '@/hooks/use-api/use-auth'
-import { createUserSchema } from '@/types/auth'
 import { accountTypeValues, isCreatedByValues, roleValues } from '@/types/enum/auth'
+import { registerUserSchema } from '@/types/user'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Heart } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { useRouter } from '../../../../i18n/navigation'
 
-const schema = createUserSchema.pick({
+const schema = registerUserSchema.pick({
   fullName: true,
   username: true,
   email: true,
@@ -30,7 +30,6 @@ type FormData = z.infer<typeof schema>
 
 export default function RegisterPage() {
   const router = useRouter()
-
   const {
     register,
     handleSubmit,
@@ -53,7 +52,7 @@ export default function RegisterPage() {
       const res = await registerMutation.mutateAsync(formattedData)
       if (res) {
         toast.success('Đăng ký thành công! Vui lòng xác thực OTP.')
-        router.push(`/vi/verify-otp?email=${encodeURIComponent(data.email)}`)
+        router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`)
       }
     } catch (error) {
       console.error('Error during registration:', error)
@@ -62,7 +61,7 @@ export default function RegisterPage() {
   }
 
   const handleLogin = () => {
-    router.push('/vi/login')
+    router.push('/login')
   }
   return (
     <div className='min-h-screen flex items-center justify-center bg-[#fef2f2] px-4'>
@@ -163,7 +162,7 @@ export default function RegisterPage() {
                 </Label>
                 <Input id='district' {...register('address.district')} placeholder='Quận 1' />
                 {errors.address?.district && (
-                  <p className='text-sm text-red-500 mt-1'>{errors.address.district.message}</p>
+                  <p className='text-sm text-red-500 mt-1'>{errors.address?.district.message}</p>
                 )}
               </div>
               <div>
@@ -171,14 +170,16 @@ export default function RegisterPage() {
                   Thành phố
                 </Label>
                 <Input id='city' {...register('address.city')} placeholder='TP. Hồ Chí Minh' />
-                {errors.address?.city && <p className='text-sm text-red-500 mt-1'>{errors.address.city.message}</p>}
+                {errors.address?.city && <p className='text-sm text-red-500 mt-1'>{errors.address?.city.message}</p>}
               </div>
               <div>
                 <Label htmlFor='nation' className='mb-1'>
                   Quốc gia
                 </Label>
                 <Input id='nation' {...register('address.nation')} placeholder='Việt Nam' />
-                {errors.address?.nation && <p className='text-sm text-red-500 mt-1'>{errors.address.nation.message}</p>}
+                {errors.address?.nation && (
+                  <p className='text-sm text-red-500 mt-1'>{errors.address?.nation.message}</p>
+                )}
               </div>
             </div>
 

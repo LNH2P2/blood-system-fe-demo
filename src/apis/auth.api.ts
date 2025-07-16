@@ -1,3 +1,4 @@
+import { BASE_AUTH_PATH } from '@/constants/api_url'
 import http from '@/lib/http'
 import {
   ChangePasswordDto,
@@ -7,11 +8,10 @@ import {
   ResetPasswordDto,
   VerifyOtpDto
 } from '@/types/auth'
-import { CreateUserDto } from '@/types/user'
-import { BASE_AUTH_PATH } from '@/constants/api_url'
+import { registerUser } from '@/types/user'
 
 export const authApi = {
-  register(body: CreateUserDto) {
+  register(body: registerUser) {
     return http.post<{ message: string }>(`${BASE_AUTH_PATH}/register`, body)
   },
 
