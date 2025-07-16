@@ -63,12 +63,12 @@ export default function NavigationSidebar({ sidebarOpen, setSidebarOpen }: Navig
       href: '/donors'
     },
     {
-      id: 'inventory',
+      id: 'blood-inventory',
       label: 'Kho máu',
       icon: Droplets,
       badge: '5',
       badgeColor: 'secondary',
-      href: '/inventory'
+      href: '/blood-inventory'
     },
     {
       id: 'hospitals',
