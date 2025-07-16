@@ -1,3 +1,4 @@
+'use client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -181,16 +182,6 @@ export default function RequestsContent({ requests: initialRequests }: RequestsC
             </div>
           </div>
           <div className='flex items-center space-x-6'>
-            <div className='text-right'>
-              <div className='text-sm text-red-100'>Cập nhật lần cuối</div>
-              <div className='text-lg font-semibold'>
-                {new Date().toLocaleTimeString('vi-VN', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  second: '2-digit'
-                })}
-              </div>
-            </div>
             <div className='text-right'>
               <div className='text-sm text-red-100'>Tổng yêu cầu</div>
               <div className='text-2xl font-bold'>{requests.length}</div>
