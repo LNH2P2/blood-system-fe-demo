@@ -3,7 +3,7 @@ import createNextIntlPlugin from 'next-intl/plugin'
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ['img.freepik.com', 'learn-s3-uploader.s3.ap-southeast-1.amazonaws.com']
+    domains: ['img.freepik.com', 'learn-s3-uploader.s3.ap-southeast-1.amazonaws.com', 'example.com']
   }
 }
 

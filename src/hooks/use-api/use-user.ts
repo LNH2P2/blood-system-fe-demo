@@ -1,3 +1,4 @@
+// hooks/use-user.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createUser,
@@ -11,7 +12,20 @@ import {
 } from '@/apis/user.api'
 import { CreateUserDto, UpdateUserDto, CreateAddressDto, UpdateAddressDto } from '@/types/user'
 
-// ------------- USERS -------------
+// API search user
+const searchUsers = async (qs: string) => {
+  const res = await fetch(`http://localhost:3000/api/users?current=1&limit=10&qs=${encodeURIComponent(qs)}`)
+  const data = await res.json()
+  return data?.data?.data?.result || []
+}
+
+export const useSearchUsers = () => {
+  return useMutation({
+    mutationFn: (qs: string) => searchUsers(qs)
+  })
+}
+
+// // ------------- USERS -------------
 
 export const useGetAllUsers = (params: { current?: number; limit?: number; qs?: string }) => {
   return useQuery({
