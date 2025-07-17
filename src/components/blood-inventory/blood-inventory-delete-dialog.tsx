@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Loader2 } from 'lucide-react'
 import { BloodInventoryTableItem } from '@/types/blood-inventory.d'
-import { useRemoveBloodInventoryItem } from '@/hooks/use-api/use-blood-inventory'
+import { useDeleteBloodInventoryItem } from '@/hooks/use-api/use-blood-inventory'
 import { bloodTypeOptions, bloodComponentOptions } from '@/validations/blood-inventory'
 
 interface BloodInventoryDeleteDialogProps {
@@ -23,7 +23,7 @@ interface BloodInventoryDeleteDialogProps {
 }
 
 export function BloodInventoryDeleteDialog({ open, onOpenChange, item, onSuccess }: BloodInventoryDeleteDialogProps) {
-  const removeMutation = useRemoveBloodInventoryItem()
+  const deleteMutation = useDeleteBloodInventoryItem()
 
   if (!item) return null
 
@@ -35,13 +35,10 @@ export function BloodInventoryDeleteDialog({ open, onOpenChange, item, onSuccess
     if (!item._id) return
 
     try {
-      await removeMutation.mutateAsync({
-        hospitalId: item.hospitalId,
-        itemId: item._id
-      })
+      await deleteMutation.mutateAsync(item._id)
       onOpenChange(false)
       onSuccess?.()
-    } catch (error) {
+    } catch {
       // Error handling is done in the mutation
     }
   }
@@ -53,20 +50,24 @@ export function BloodInventoryDeleteDialog({ open, onOpenChange, item, onSuccess
           <AlertDialogTitle>Delete Blood Inventory Item</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className='space-y-2 text-sm text-muted-foreground'>
-              <p>
-                This action cannot be undone. This will permanently remove the blood inventory item.
-              </p>
+              <p>This action cannot be undone. This will permanently remove the blood inventory item.</p>
               {item && (
                 <div className='bg-gray-50 p-3 rounded-md space-y-1 text-gray-800'>
                   <div className='font-medium'>
-                    <span><strong>Hospital:</strong> {item.hospitalName}</span>
+                    <span>
+                      <strong>Hospital:</strong> {item.hospitalName}
+                    </span>
                   </div>
                   <div>
-                    <span><strong>Blood Type:</strong> {bloodTypeLabel}</span>
+                    <span>
+                      <strong>Blood Type:</strong> {bloodTypeLabel}
+                    </span>
                     <span> ({componentLabel})</span>
                   </div>
                   <div>
-                    <span><strong>Quantity:</strong> {item.quantity} units</span>
+                    <span>
+                      <strong>Quantity:</strong> {item.quantity} units
+                    </span>
                   </div>
                 </div>
               )}
@@ -74,13 +75,13 @@ export function BloodInventoryDeleteDialog({ open, onOpenChange, item, onSuccess
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={removeMutation.isPending}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={deleteMutation.isPending}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={(e) => handleDelete(e)}
-            disabled={removeMutation.isPending}
+            disabled={deleteMutation.isPending}
             className='bg-red-600 hover:bg-red-700'
           >
-            {removeMutation.isPending && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+            {deleteMutation.isPending && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>
