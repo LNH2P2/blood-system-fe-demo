@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { accountTypeValues, genderValues, isCreatedByValues, roleValues } from './enum/auth'
+import { HospitalShortSchema } from './hospital'
 
 export const addressSchema = z.object({
   _id: z.string().optional(),
@@ -30,6 +31,7 @@ export const deleteBySchema = z.object({
   _id: z.string({ required_error: 'ID người xóa không được để trống' }).nullable().optional(),
   email: z.string({ required_error: 'Email không được để trống' }).nullable().optional()
 })
+
 export const createUserSchema = z.object({
   fullName: z
     .string()
@@ -57,7 +59,8 @@ export const createUserSchema = z.object({
   isDeletedBy: deleteBySchema.nullable().optional(),
   codeId: z.number().optional(),
   codeExpired: z.string().optional(),
-  verified: z.boolean().optional()
+  verified: z.boolean().optional(),
+  hospitalId: z.string().min(1, 'chọn ít nhất một cơ sở').optional()
 })
 
 export const registerUserSchema = z.object({
@@ -92,7 +95,8 @@ export const registerUserSchema = z.object({
 export const updateUserSchema = createUserSchema.partial()
 
 export const userResponseSchema = updateUserSchema.omit({ password: true }).extend({
-  _id: z.string()
+  _id: z.string(),
+  hospitalId: HospitalShortSchema.optional()
 })
 
 export const userApiResponseSchema = z.object({

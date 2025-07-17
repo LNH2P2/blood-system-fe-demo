@@ -9,6 +9,7 @@ interface JwtPayload {
   email: string
   username: string
   image?: string
+  hospitalId?: string
   role: string
   iat: number
   exp: number
