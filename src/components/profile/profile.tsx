@@ -2,6 +2,7 @@
 
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { useAuthContext } from '@/contexts/auth-context'
 import { formatDate } from '@/hooks/format-date'
 import { useGetHospitalsName } from '@/hooks/use-api/use-hopsital'
 import { useUploadLocalFile } from '@/hooks/use-api/use-upfile'
@@ -27,6 +28,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Input } from '../ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 export default function UserProfile({ userId }: { userId: string }) {
+  const { refreshAccessToken } = useAuthContext()
   const { data: user, isLoading } = useGetUserById(userId)
   const updateUser = useUpdateUser(userId)
   const createAddress = useCreateUserAddress(userId)
@@ -92,6 +94,7 @@ export default function UserProfile({ userId }: { userId: string }) {
       }
 
       await updateUser.mutateAsync(changedValues)
+      await refreshAccessToken()
       setIsEditing(false)
       toast.success('Cập nhật người dùng thành công')
     } catch (error) {
