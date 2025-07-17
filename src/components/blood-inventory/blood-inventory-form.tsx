@@ -77,20 +77,22 @@ export function BloodInventoryForm({ open, onOpenChange, editItem, onSuccess }: 
         bloodType: data.bloodType,
         component: data.component,
         quantity: data.quantity,
-        expiresAt: new Date(data.expiresAt).toISOString()
+        expiresAt: new Date(data.expiresAt).toISOString(),
+        hospitalId: data.hospitalId
       }
 
       if (isEditing && editItem?._id) {
         await updateMutation.mutateAsync({
-          hospitalId: data.hospitalId,
-          itemId: editItem._id,
-          data: submitData
+          id: editItem._id,
+          data: {
+            bloodType: submitData.bloodType,
+            component: submitData.component,
+            quantity: submitData.quantity,
+            expiresAt: submitData.expiresAt
+          }
         })
       } else {
-        await addMutation.mutateAsync({
-          hospitalId: data.hospitalId,
-          data: submitData
-        })
+        await addMutation.mutateAsync(submitData)
       }
 
       onOpenChange(false)
@@ -121,11 +123,7 @@ export function BloodInventoryForm({ open, onOpenChange, editItem, onSuccess }: 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Hospital</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    disabled={isEditing || hospitalsLoading}
-                  >
+                  <Select onValueChange={field.onChange} value={field.value} disabled={isEditing || hospitalsLoading}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder='Select hospital' />
