@@ -448,17 +448,13 @@ export default function BloodInventoryManagementPage() {
                       </div>
                       {hospitalGroup.expiredCount > 0 && (
                         <div className='text-center'>
-                          <div className='text-lg font-bold text-red-600'>
-                            {hospitalGroup.expiredCount}
-                          </div>
+                          <div className='text-lg font-bold text-red-600'>{hospitalGroup.expiredCount}</div>
                           <div className='text-xs text-red-600'>Hết hạn</div>
                         </div>
                       )}
                       {hospitalGroup.expiringSoonCount > 0 && (
                         <div className='text-center'>
-                          <div className='text-lg font-bold text-orange-600'>
-                            {hospitalGroup.expiringSoonCount}
-                          </div>
+                          <div className='text-lg font-bold text-orange-600'>{hospitalGroup.expiringSoonCount}</div>
                           <div className='text-xs text-orange-600'>Sắp hết hạn</div>
                         </div>
                       )}
