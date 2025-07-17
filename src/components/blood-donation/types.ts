@@ -1,6 +1,8 @@
 export interface BloodRequest {
   id: number
+  _id: string
   hospital: string
+  hospitalId: any
   bloodType: string
   quantity: number
   priority: string

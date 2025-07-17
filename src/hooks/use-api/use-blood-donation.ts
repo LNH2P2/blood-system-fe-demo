@@ -1,6 +1,7 @@
 // hooks/use-blood-donation.ts
 import {
   createDonationRequest,
+  updateDonationRequest,
   getAllHospitals,
   getBloodDonationHistory,
   getDemandReport,
@@ -10,12 +11,16 @@ import {
   getPerformanceReport,
   getRequestStats
 } from '@/lib/apis/blood-donation.api'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 // Tạo yêu cầu hiến máu
 export const useCreateDonationRequest = () => {
+  const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: any) => createDonationRequest(body)
+    mutationFn: (body: any) => createDonationRequest(body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['donation-requests'] })
+    }
   })
 }
 
@@ -27,6 +32,16 @@ export const useGetAllHospitals = () => {
   })
 }
 
+// Cập nhật yêu cầu hiến máu
+export const useUpdateDonationRequest = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: any }) => updateDonationRequest(id, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['donation-requests'] })
+    }
+  })
+}
 export const useDonationRequestsForHospital = (params: { page: number; limit: number; priority?: string }) => {
   return useQuery({
     queryKey: ['donation-requests', params],

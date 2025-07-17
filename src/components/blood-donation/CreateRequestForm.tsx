@@ -17,7 +17,7 @@ import { useCreateDonationRequest, useGetAllHospitals } from '@/hooks/use-api/us
 import { useSearchUsers } from '@/hooks/use-api/use-user'
 import { toast } from 'sonner'
 
-const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+export const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
 const PRIORITIES = [
   {
     value: 'urgent',

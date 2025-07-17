@@ -52,3 +52,8 @@ export async function getPerformanceReport() {
 export async function getIncidentReport() {
   return http.get<{ data: { name: string; value: number }[] }>('/donation-requests/incident-report')
 }
+
+// Cập nhật yêu cầu hiến máu
+export async function updateDonationRequest(id: string, data: any) {
+  return http.patch(`/donation-requests/${id}`, data)
+}

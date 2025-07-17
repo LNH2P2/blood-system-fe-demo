@@ -29,9 +29,11 @@ const STATUS_LABELS: Record<number | string, string> = {
   0: 'Chờ xử lý',
   1: 'Hoàn thành',
   2: 'Đã hủy',
+  3: 'Không đủ điều kiện',
   SCHEDULED: 'Chờ xử lý',
   COMPLETED: 'Hoàn thành',
-  CANCELLED: 'Đã hủy'
+  CANCELLED: 'Đã hủy',
+  FAILED: 'Không đủ điều kiện'
 }
 // Mapping priority sang tiếng Việt và badge
 const PRIORITY_LABELS: Record<string, string> = {
@@ -47,6 +49,7 @@ export default function RequestsContent({ requests: initialRequests }: RequestsC
   const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
+  console.log('selectedRequest', selectedRequest)
 
   const { data: donationRequestsData, isLoading: loadingRequests } = useDonationRequestsForHospital(
     priorityFilter === 'all' ? { page: 1, limit: 20 } : { page: 1, limit: 20, priority: priorityFilter }

@@ -1,8 +1,6 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import {
   Heart,
@@ -21,8 +19,10 @@ import {
   CheckCircle
 } from 'lucide-react'
 import React from 'react'
+import { BLOOD_TYPES } from './CreateRequestForm'
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
 import { BloodRequest } from './types'
-import { getStatusColor, getPriorityBadge } from './utils'
+import { useUpdateDonationRequest } from '@/hooks/use-api/use-blood-donation'
 
 interface RequestDetailProps {
   request: BloodRequest
@@ -31,6 +31,7 @@ interface RequestDetailProps {
 }
 
 export default function RequestDetail({ request, isOpen, onClose }: RequestDetailProps) {
+  const updateDonationRequestMutation = useUpdateDonationRequest()
   console.log('request', request)
   // Helper: status mapping
   const getStatusText = (status: number | string) => {
@@ -41,6 +42,8 @@ export default function RequestDetail({ request, isOpen, onClose }: RequestDetai
         return 'Đã xác nhận'
       case 2:
         return 'Hoàn thành'
+      case 3:
+        return 'Không đủ điều kiện'
       default:
         return 'Không xác định'
     }
@@ -123,8 +126,26 @@ export default function RequestDetail({ request, isOpen, onClose }: RequestDetai
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Call API to update request
-    onClose()
+    updateDonationRequestMutation.mutate(
+      {
+        id: String(request._id),
+        body: {
+          scheduleDate: form.scheduleDate,
+          bloodType: form.bloodType,
+          quantity: Number(form.quantity),
+          priority: form.priority,
+          location: request.location,
+          createdBy: request.createdBy,
+          status: Number(form.status),
+          note: form.note
+        }
+      },
+      {
+        onSuccess: () => {
+          onClose()
+        }
+      }
+    )
   }
 
   console.log('request', request)
@@ -161,14 +182,18 @@ export default function RequestDetail({ request, isOpen, onClose }: RequestDetai
                 </span>
                 <label className='block text-gray-700 font-semibold mb-1'>Nhóm máu</label>
               </div>
-              <input
-                type='text'
-                name='bloodType'
-                value={form.bloodType}
-                onChange={handleChange}
-                className='w-full border rounded-lg px-4 py-2 font-mono text-lg font-bold bg-red-50 focus:ring-2 focus:ring-red-300 transition-all shadow-sm'
-                required
-              />
+              <Select value={form.bloodType} onValueChange={(value) => handleSelectChange('bloodType', value)} required>
+                <SelectTrigger className='w-full mt-1.5 min-w-[120px] font-mono text-lg font-bold bg-red-50 focus:ring-2 focus:ring-red-300 transition-all shadow-sm'>
+                  <SelectValue placeholder='Chọn nhóm máu' />
+                </SelectTrigger>
+                <SelectContent className='w-full min-w-[120px]'>
+                  {BLOOD_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <div className='flex items-center gap-3 mt-4'>
                 <span className='bg-red-100 rounded-full p-2'>
                   <Heart className='h-5 w-5 text-red-500' />
@@ -268,6 +293,7 @@ export default function RequestDetail({ request, isOpen, onClose }: RequestDetai
                 <option value={0}>Chờ xử lý</option>
                 <option value={1}>Hoàn thành</option>
                 <option value={2}>Đã hủy</option>
+                <option value={3}>Không đủ điều kiện</option>
               </select>
             </div>
           </div>
