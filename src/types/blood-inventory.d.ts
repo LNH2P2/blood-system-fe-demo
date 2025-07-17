@@ -17,8 +17,10 @@ export interface BloodInventorySummary {
 // Query DTO for blood inventory, can be extended later
 export type BloodInventoryQueryDto = Pick<
   HospitalQueryDto,
-  'province' | 'district' | 'ward' | 'bloodType' | 'component'
->
+  'province' | 'district' | 'ward' | 'bloodType' | 'component' | 'search'
+> & {
+  status?: string // For filtering by expiry status, stock level, etc.
+}
 
 // DTOs for blood inventory management
 export interface CreateBloodInventoryItemDto {

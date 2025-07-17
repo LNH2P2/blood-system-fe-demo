@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { BloodType, BloodComponent } from '@/types/constants';
+import { z } from 'zod'
+import { BloodType, BloodComponent } from '@/types/constants'
 
 export const bloodInventorySchema = z.object({
   hospitalId: z.string().min(1, 'Please select a hospital'),
