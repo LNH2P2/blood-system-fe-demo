@@ -38,7 +38,11 @@ export const sendOtpSchema = z.object({
 })
 
 export const refreshResponseSchema = z.object({
-  access_token: z.string()
+  statusCode: z.number(),
+  message: z.string(),
+  data: z.object({
+    access_token: z.string()
+  })
 })
 
 // ✅ Type Inference
