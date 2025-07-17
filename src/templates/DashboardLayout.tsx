@@ -18,11 +18,11 @@ export default function DashboardLayout({ children, activeMenu }: DashboardLayou
       <NavigationSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <div className='flex-1 flex flex-col overflow-hidden'>
-        <AppHeader
+        {/* <AppHeader
           activeMenu={activeMenu}
           showNotifications={showNotifications}
           setShowNotifications={setShowNotifications}
-        />
+        /> */}
 
         <main className='flex-1 overflow-y-auto p-6'>{children}</main>
       </div>

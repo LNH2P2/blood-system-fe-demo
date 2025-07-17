@@ -62,10 +62,10 @@ export default function AppHeader({ activeMenu, showNotifications, setShowNotifi
 
         <div className='flex items-center space-x-4'>
           {/* Search */}
-          <div className='relative'>
+          {/* <div className='relative'>
             <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
             <Input placeholder='Tìm kiếm...' className='pl-10 w-64' />
-          </div>
+          </div> */}
 
           {/* Notifications */}
           <DropdownMenu open={showNotifications} onOpenChange={setShowNotifications}>
