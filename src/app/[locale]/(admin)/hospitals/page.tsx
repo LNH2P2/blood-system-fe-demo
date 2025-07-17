@@ -30,7 +30,8 @@ import { HospitalForm } from '@/components/hospital/hospital-form'
 import { HospitalToolbar } from '../../../../components/hospital/hospital-toolbar'
 import { EditHospitalDialog } from '../../../../components/hospital/edit-hospital-dialog'
 import { ConfirmationDialog } from '@/components/common/confirmation-dialog'
-import { CreateHospitalDto, Hospital as HospitalType, UpdateHospitalDto } from '@/types/hospital'
+import { ClientTime } from '@/components/common/client-time'
+import { CreateHospitalDto, Hospital as HospitalType, UpdateHospitalDto, BloodInventoryItem } from '@/types/hospital'
 
 export default function HospitalsPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -65,7 +66,7 @@ export default function HospitalsPage() {
 
   if (error) return <div>An error occurred: {error.message}</div>
 
-  const hospitals = hospitalsData?.data || []
+  const hospitals = hospitalsData?.hospitals || []
 
   const handleEditClick = (hospital: HospitalType) => {
     setEditingHospital(hospital)
@@ -91,10 +92,10 @@ export default function HospitalsPage() {
   // Calculate statistics
   const getStats = () => {
     const total = hospitals.length
-    const active = hospitals.filter((h) => h.isActive).length
-    const inactive = hospitals.filter((h) => !h.isActive).length
-    const withInventory = hospitals.filter((h) => h.bloodInventory && h.bloodInventory.length > 0).length
-    const recentlyAdded = hospitals.filter((h) => {
+    const active = hospitals.filter((h: HospitalType) => h.isActive).length
+    const inactive = hospitals.filter((h: HospitalType) => !h.isActive).length
+    const withInventory = hospitals.filter((h: HospitalType) => h.bloodInventory && h.bloodInventory.length > 0).length
+    const recentlyAdded = hospitals.filter((h: HospitalType) => {
       const createdDate = new Date(h.createdAt || Date.now())
       const weekAgo = new Date()
       weekAgo.setDate(weekAgo.getDate() - 7)
@@ -186,13 +187,15 @@ export default function HospitalsPage() {
           <div className='flex items-center space-x-6'>
             <div className='text-right'>
               <div className='text-sm text-blue-100'>Cập nhật lần cuối</div>
-              <div className='text-lg font-semibold'>
-                {new Date().toLocaleTimeString('vi-VN', {
+              <ClientTime
+                className='text-lg font-semibold'
+                locale='vi-VN'
+                options={{
                   hour: '2-digit',
                   minute: '2-digit',
                   second: '2-digit'
-                })}
-              </div>
+                }}
+              />
             </div>
             <div className='text-right'>
               <div className='text-sm text-blue-100'>Tổng bệnh viện</div>
@@ -250,7 +253,7 @@ export default function HospitalsPage() {
             </div>
           ) : (
             <div className='space-y-1'>
-              {hospitals.map((hospital, index) => (
+              {hospitals.map((hospital: HospitalType, index: number) => (
                 <div
                   key={hospital._id}
                   className={`p-6 border-l-4 hover:bg-gray-50/50 hover:shadow-md transition-all duration-200 ${
@@ -310,11 +313,15 @@ export default function HospitalsPage() {
                           <div className='flex items-center justify-between mb-2'>
                             <span className='text-xs text-gray-500'>Tồn kho máu</span>
                             <span className='text-xs font-medium text-gray-700'>
-                              {hospital.bloodInventory.reduce((sum, item) => sum + item.quantity, 0)} đơn vị
+                              {hospital.bloodInventory.reduce(
+                                (sum: number, item: BloodInventoryItem) => sum + item.quantity,
+                                0
+                              )}{' '}
+                              đơn vị
                             </span>
                           </div>
                           <div className='flex flex-wrap gap-1'>
-                            {hospital.bloodInventory.slice(0, 4).map((item, idx) => (
+                            {hospital.bloodInventory.slice(0, 4).map((item: BloodInventoryItem, idx: number) => (
                               <Badge
                                 key={idx}
                                 variant='outline'
