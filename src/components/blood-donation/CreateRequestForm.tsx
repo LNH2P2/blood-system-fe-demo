@@ -63,7 +63,7 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
     recipientId: '',
     recipientInfo: '',
     bloodType: '',
-    quantity: 1,
+    quantity: 100,
     hospitalId: '',
     location: '',
     scheduleDate: '',
@@ -71,6 +71,16 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
     priority: 'normal',
     status: ''
   })
+
+  // Status labels mapping (imported from RequestsContent)
+  const STATUS_LABELS: Record<number | string, string> = {
+    0: 'Chờ xử lý',
+    1: 'Hoàn thành',
+    2: 'Đã hủy',
+    SCHEDULED: 'Chờ xử lý',
+    COMPLETED: 'Hoàn thành',
+    CANCELLED: 'Đã hủy'
+  }
   const [submitting, setSubmitting] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState<UserSearchResult[]>([])
@@ -157,7 +167,7 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
         recipientId: '',
         recipientInfo: '',
         bloodType: '',
-        quantity: 1,
+        quantity: 100,
         hospitalId: '',
         location: '',
         scheduleDate: '',
@@ -275,13 +285,13 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
         </div>
         <div>
           <Label htmlFor='quantity' className='text-gray-700'>
-            Số lượng (đơn vị)
+            Lượng máu (đơn vị ml)
           </Label>
           <Input
             id='quantity'
             name='quantity'
             type='number'
-            min={1}
+            min={100}
             step={1}
             pattern='[0-9]*'
             value={form.quantity}
@@ -322,9 +332,13 @@ export default function CreateRequestForm({ onSubmit }: { onSubmit?: (data: any)
               <SelectValue placeholder='Chọn trạng thái' />
             </SelectTrigger>
             <SelectContent className='w-full min-w-[120px]'>
-              <SelectItem value={DonationRequestStatus.SCHEDULED.toString()}>Chờ xử lý</SelectItem>
-              <SelectItem value={DonationRequestStatus.COMPLETED.toString()}>Hoàn thành</SelectItem>
-              <SelectItem value={DonationRequestStatus.CANCELLED.toString()}>Đã hủy</SelectItem>
+              {Object.entries(STATUS_LABELS)
+                .filter(([key]) => !isNaN(Number(key)))
+                .map(([key, label]) => (
+                  <SelectItem key={key} value={key}>
+                    {label}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>
