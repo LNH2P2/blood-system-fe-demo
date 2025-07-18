@@ -236,7 +236,7 @@ export default function BloodInventoryPage() {
               />
             </div>
             <div className='flex flex-col'>
-              <span className='font-semibold'>{quantity}</span>
+              <span className='font-semibold'>{quantity} ml</span>
               <span className='text-xs text-muted-foreground'>
                 {isCriticalStock ? 'Critical' : isLowStock ? 'Low Stock' : 'In Stock'}
               </span>
@@ -393,9 +393,9 @@ export default function BloodInventoryPage() {
           <CardContent className='p-4'>
             <div className='flex items-center justify-between'>
               <div>
-                <p className='text-sm font-medium text-blue-600'>Tổng đơn vị máu</p>
+                <p className='text-sm font-medium text-blue-600'>Tổng ml máu</p>
                 <p className='text-2xl font-bold text-blue-700'>{summaryStats.totalQuantity}</p>
-                <p className='text-xs text-blue-600 mt-1'>Đơn vị sẵn sàng hiến tặng</p>
+                <p className='text-xs text-blue-600 mt-1'>Milliliter sẵn sàng hiến tặng</p>
               </div>
               <div className='bg-blue-100 p-3 rounded-full'>
                 <Droplets className='h-6 w-6 text-blue-500' />
@@ -467,7 +467,7 @@ export default function BloodInventoryPage() {
                     <BloodTypeBadge bloodType={type as BloodType} size='sm' />
                     <span className='font-medium text-gray-700'>{type}</span>
                   </div>
-                  <span className='text-sm text-gray-600 font-semibold'>{quantity} đơn vị</span>
+                  <span className='text-sm text-gray-600 font-semibold'>{quantity} ml</span>
                 </div>
                 <div className='space-y-1'>
                   <Progress value={(quantity / summaryStats.totalQuantity) * 100} className='h-2' />
