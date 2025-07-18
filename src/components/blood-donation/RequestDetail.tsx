@@ -111,118 +111,81 @@ export default function RequestDetail({ request, isOpen, onClose }: RequestDetai
                 {request.time}
               </div>
             </div>
-          </DialogHeader>
+          </div>
+          <div className='flex md:flex-col md:items-end items-center gap-2 md:ml-auto'>
+            <Badge
+              className={`flex items-center gap-1 font-semibold border text-base px-3 py-1.5 ${getStatusBadgeColor(
+                request.status
+              )}`}
+            >
+              <Activity className='h-4 w-4 mr-1' />
+              {getStatusText(request.status)}
+            </Badge>
+            <Badge
+              className={`flex items-center gap-1 font-semibold border text-base px-3 py-1.5 ${getPriorityBadge(
+                request.priority
+              )} mt-0.5`}
+            >
+              {getPriorityIcon(request.priority)}
+              {request.priority}
+            </Badge>
+          </div>
         </div>
-
-        {/* Content */}
-        <div className='flex-1 overflow-y-auto p-4 md:p-6'>
-          <div className='grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6'>
-            {/* Main Info */}
-            <div className='xl:col-span-2 space-y-4 md:space-y-6'>
-              {/* Priority & Status */}
-              <Card className='shadow-sm'>
-                <CardHeader className='pb-3'>
-                  <CardTitle className='flex items-center space-x-2 text-lg'>
-                    {getPriorityIcon(request.priority)}
-                    <span>Thông tin ưu tiên</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className='space-y-4'>
-                  <div className='flex flex-wrap items-center gap-3'>
-                    <Badge
-                      variant={getPriorityBadge(request.priority)}
-                      className={`${
-                        request.priority === 'Cấp cứu'
-                          ? 'bg-red-100 text-red-800 border-red-300 animate-pulse'
-                          : request.priority === 'Khẩn cấp'
-                          ? 'bg-orange-100 text-orange-800 border-orange-300'
-                          : 'bg-blue-100 text-blue-800 border-blue-300'
-                      } font-semibold text-sm md:text-base px-3 py-1 md:px-4 md:py-2`}
-                    >
-                      {request.priority}
-                    </Badge>
-                    <Badge
-                      className={`font-medium text-sm md:text-base px-3 py-1 md:px-4 md:py-2 ${getStatusColor(
-                        request.status
-                      )}`}
-                    >
-                      {request.status}
-                    </Badge>
-                  </div>
-
-                  {/* Progress for urgent requests */}
-                  {(request.priority === 'Cấp cứu' || request.priority === 'Khẩn cấp') && (
-                    <div className='space-y-2'>
-                      <div className='flex items-center justify-between'>
-                        <span className='text-sm text-gray-600'>Thời gian xử lý tối đa</span>
-                        <span className='text-sm font-medium'>
-                          {request.priority === 'Cấp cứu' ? '30 phút' : '2 giờ'}
-                        </span>
-                      </div>
-                      <div className='w-full bg-gray-200 rounded-full h-3'>
-                        <div
-                          className={`h-3 rounded-full transition-all duration-300 ${
-                            request.priority === 'Cấp cứu' ? 'bg-red-500 w-[75%]' : 'bg-orange-500 w-[40%]'
-                          }`}
-                        />
-                      </div>
-                      <p className='text-xs text-gray-500'>Thời gian đã trôi qua: {request.time}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Blood Request Details */}
-              <Card className='shadow-sm'>
-                <CardHeader className='pb-3'>
-                  <CardTitle className='flex items-center space-x-2 text-lg'>
-                    <Droplets className='h-5 w-5 text-red-600' />
-                    <span>Thông tin máu yêu cầu</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6'>
-                    <div className='space-y-4'>
-                      <div>
-                        <label className='text-sm font-medium text-gray-600 block mb-2'>Nhóm máu</label>
-                        <Badge
-                          variant='outline'
-                          className={`font-mono font-bold text-lg px-4 py-2 ${getBloodTypeColor(request.bloodType)}`}
-                        >
-                          {request.bloodType}
-                        </Badge>
-                      </div>
-                      <div>
-                        <label className='text-sm font-medium text-gray-600 block mb-2'>Số lượng cần thiết</label>
-                        <div className='flex items-center space-x-2'>
-                          <Heart className='h-5 w-5 text-red-500' />
-                          <span className='text-2xl font-bold text-gray-800'>{request.quantity}</span>
-                          <span className='text-gray-600'>ml</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className='space-y-4'>
-                      <div>
-                        <label className='text-sm font-medium text-gray-600 block mb-2'>Mục đích sử dụng</label>
-                        <p className='text-gray-800 bg-gray-50 p-3 rounded-lg'>
-                          {request.priority === 'Cấp cứu'
-                            ? 'Phẫu thuật cấp cứu'
-                            : request.priority === 'Khẩn cấp'
-                            ? 'Điều trị nội khoa'
-                            : 'Dự trữ bệnh viện'}
-                        </p>
-                      </div>
-                      <div>
-                        <label className='text-sm font-medium text-gray-600 block mb-2'>Khoa phòng</label>
-                        <p className='text-gray-800 bg-gray-50 p-3 rounded-lg'>
-                          {request.priority === 'Cấp cứu'
-                            ? 'Khoa Cấp Cứu'
-                            : request.priority === 'Khẩn cấp'
-                            ? 'Khoa Nội'
-                            : 'Khoa Truyền Máu'}
-                        </p>
-                      </div>
-                    </div>
+        {/* Main Content */}
+        <CardContent className='p-6 bg-white'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            {/* Left column: blood info */}
+            <div className='space-y-6'>
+              <div className='flex items-center gap-5'>
+                <div
+                  className={`rounded-lg border ${getBloodTypeColor(
+                    request.bloodType
+                  )} flex flex-col items-center justify-center px-6 py-3 shadow font-mono text-2xl font-bold`}
+                >
+                  {request.bloodType}
+                </div>
+                <div className='flex items-center gap-2'>
+                  <span className='bg-red-100 rounded-full p-1.5'>
+                    <Heart className='h-5 w-5 text-red-500' />
+                  </span>
+                  <span className='text-xl font-bold'>{request.quantity}</span>
+                  <span className='text-gray-500'>đơn vị</span>
+                </div>
+              </div>
+              <div className='flex items-center gap-3'>
+                <span className='bg-blue-100 rounded-full p-1.5'>
+                  <MapPin className='h-5 w-5 text-blue-500' />
+                </span>
+                <span className='text-gray-800 font-medium'>{request.location}</span>
+              </div>
+              <div className='flex items-center gap-3'>
+                <span className='bg-green-100 rounded-full p-1.5'>
+                  <Calendar className='h-5 w-5 text-green-500' />
+                </span>
+                <span className='text-gray-800'>
+                  Ngày dự kiến:{' '}
+                  <span className='font-semibold'>{request.scheduleDate ? formatDate(request.scheduleDate) : '-'}</span>
+                </span>
+              </div>
+              <div className='flex items-center gap-3'>
+                <span className='bg-purple-100 rounded-full p-1.5'>
+                  <User className='h-5 w-5 text-purple-500' />
+                </span>
+                <span className='text-gray-800'>
+                  Người tạo: <span className='font-semibold'>{request.createdBy}</span>
+                </span>
+              </div>
+            </div>
+            {/* Right column: priority, note, contact */}
+            <div className='space-y-6'>
+              {/* Progress bar cho ưu tiên */}
+              {(request.priority === 'Cấp cứu' || request.priority === 'Khẩn cấp') && (
+                <div className='mt-2'>
+                  <div className='flex items-center justify-between mb-1'>
+                    <span className='text-xs text-gray-500'>Mức độ khẩn cấp</span>
+                    <span className='text-xs font-medium text-gray-700'>
+                      {request.priority === 'Cấp cứu' ? '95%' : '70%'}
+                    </span>
                   </div>
                   <div className='w-full bg-gradient-to-r from-red-200 via-orange-200 to-gray-200 rounded-full h-2'>
                     <div
