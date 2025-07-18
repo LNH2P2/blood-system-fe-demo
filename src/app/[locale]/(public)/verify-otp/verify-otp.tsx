@@ -7,10 +7,12 @@ import { Label } from '@/components/ui/label'
 import { useResendOtp, useVerifyOtp } from '@/hooks/use-api/use-auth'
 import { verifyOtpSchema } from '@/types/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { useRouter } from '../../../../i18n/navigation'
 
 const schema = verifyOtpSchema
 type FormData = z.infer<typeof schema>
@@ -19,10 +21,21 @@ export default function VerifyOtp() {
   const searchParams = useSearchParams()
   const emailFromQuery = searchParams.get('email') ?? ''
   const router = useRouter()
+  const [cooldown, setCooldown] = useState(0)
+
+  useEffect(() => {
+    if (cooldown === 0) return
+
+    const interval = setInterval(() => {
+      setCooldown((prev) => prev - 1)
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [cooldown])
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting }
+    formState: { errors, isSubmitting, isLoading }
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -36,7 +49,7 @@ export default function VerifyOtp() {
       await verifyOtpMutation.mutateAsync(data)
       toast.success('Xác minh thành công! Bạn có thể đăng nhập.')
       // Có thể chuyển sang trang đăng nhập tại đây nếu muốn
-      router.push('/v1/login')
+      router.push('/login')
     } catch (error) {
       console.log('Error during OTP verification:', error)
       toast.error('Xác minh thất bại. Vui lòng kiểm tra mã OTP.')
@@ -44,9 +57,12 @@ export default function VerifyOtp() {
   }
 
   const handleResend = async () => {
+    if (cooldown > 0) return
+
     try {
       await resendOtpMutation.mutateAsync(emailFromQuery)
       toast.success('Mã OTP mới đã được gửi lại.')
+      setCooldown(30)
     } catch {
       toast.error('Không thể gửi lại OTP.')
     }
@@ -92,9 +108,14 @@ export default function VerifyOtp() {
               <button
                 type='button'
                 onClick={handleResend}
-                className='text-[#d62828] cursor-pointer underline font-medium transition-transform duration-200 ease-in-out hover:scale-105 hover:text-red-700'
+                disabled={cooldown > 0 || isLoading}
+                className={`${
+                  cooldown > 0
+                    ? 'text-gray-400 cursor-not-allowed'
+                    : 'text-[#d62828] cursor-pointer hover:scale-105 hover:text-red-700'
+                } underline font-medium transition duration-200`}
               >
-                Gửi lại
+                {cooldown > 0 ? `Gửi lại (${cooldown}s)` : 'Gửi lại'}
               </button>
             </p>
           </form>

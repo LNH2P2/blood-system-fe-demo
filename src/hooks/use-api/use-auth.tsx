@@ -1,12 +1,13 @@
 // hooks/useAuth.ts
-import { authApi } from '@/lib/apis/auth.api'
-import { ChangePasswordDto, CreateUserDto, LoginDto, ResetPasswordDto, VerifyOtpDto } from '@/types/auth'
+import { authApi } from '../../apis/auth.api'
+import { ChangePasswordDto, LoginDto, ResetPasswordDto, VerifyOtpDto } from '@/types/auth'
+import { CreateUserDto, registerUser } from '@/types/user'
 import { useMutation } from '@tanstack/react-query'
 
 // Đăng ký
 export const useRegister = () => {
   return useMutation({
-    mutationFn: (body: CreateUserDto) => authApi.register(body)
+    mutationFn: (body: registerUser) => authApi.register(body)
   })
 }
 

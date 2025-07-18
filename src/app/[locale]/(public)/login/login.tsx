@@ -10,10 +10,10 @@ import detectDevice from '@/lib/detect-device'
 import { loginSchema } from '@/types/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Heart } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { useRouter } from '../../../../i18n/navigation'
 
 const schema = loginSchema
 type FormData = z.infer<typeof schema>
@@ -42,7 +42,7 @@ export default function Login() {
         const { access_token, refresh_token } = res.payload.data
         login(access_token, refresh_token)
         toast.success('Đăng nhập thành công!')
-        route.push('/vi/dashboard')
+        route.push('/dashboard')
       }
     } catch (error) {
       console.log('Login error:', error)
@@ -51,7 +51,7 @@ export default function Login() {
   }
 
   const handleRegister = () => {
-    route.push('/vi/register')
+    route.push('/register')
   }
 
   return (
@@ -85,7 +85,7 @@ export default function Login() {
               <div className='text-right mt-1'>
                 <button
                   type='button'
-                  onClick={() => route.push('/vi/forgot-password')}
+                  onClick={() => route.push('/forgot-password')}
                   className='text-[#d62828] cursor-pointer underline transition-transform duration-200 ease-in-out hover:scale-105 hover:text-red-700'
                 >
                   Quên mật khẩu?
