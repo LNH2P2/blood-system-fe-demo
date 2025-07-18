@@ -19,6 +19,7 @@ import {
   Settings,
   User,
   Users,
+  Hospital,
   X
 } from 'lucide-react'
 
@@ -61,12 +62,24 @@ export default function NavigationSidebar({ sidebarOpen, setSidebarOpen }: Navig
       href: '/requests'
     },
     {
-      id: 'inventory',
+      id: 'donors',
+      label: 'Người hiến máu',
+      icon: Users,
+      href: '/donors'
+    },
+    {
+      id: 'blood-inventory',
       label: 'Kho máu',
       icon: Droplets,
       badge: '5',
       badgeColor: 'secondary',
-      href: '/inventory'
+      href: '/blood-inventory'
+    },
+    {
+      id: 'hospitals',
+      label: 'Bệnh viện',
+      icon: Hospital,
+      href: '/hospitals'
     },
     {
       id: 'blog',

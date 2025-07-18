@@ -86,7 +86,7 @@ export default function AppHeader({ activeMenu, showNotifications, setShowNotifi
                   <div className='w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0'></div>
                   <div className='flex-1'>
                     <p className='text-sm font-medium'>Yêu cầu cấp cứu mới</p>
-                    <p className='text-xs text-muted-foreground'>Bệnh viện Chợ Rẫy cần 5 đơn vị máu O-</p>
+                    <p className='text-xs text-muted-foreground'>Bệnh viện Chợ Rẫy cần 5 ml máu O-</p>
                     <p className='text-xs text-muted-foreground mt-1'>2 phút trước</p>
                   </div>
                 </DropdownMenuItem>
@@ -94,7 +94,7 @@ export default function AppHeader({ activeMenu, showNotifications, setShowNotifi
                   <div className='w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0'></div>
                   <div className='flex-1'>
                     <p className='text-sm font-medium'>Kho máu sắp cạn</p>
-                    <p className='text-xs text-muted-foreground'>Nhóm máu AB- chỉ còn 12 đơn vị</p>
+                    <p className='text-xs text-muted-foreground'>Nhóm máu AB- chỉ còn 12 ml</p>
                     <p className='text-xs text-muted-foreground mt-1'>15 phút trước</p>
                   </div>
                 </DropdownMenuItem>

@@ -2,6 +2,7 @@ import { env } from '@/lib/env'
 
 type CustomOptions = Omit<RequestInit, 'method'> & {
   baseUrl?: string | undefined
+  searchParams?: Record<string, any>
 }
 
 const ENTITY_ERROR_STATUS = 422
@@ -99,7 +100,8 @@ const request = async <Response>(
   }
 
   const baseUrl = options?.baseUrl === undefined ? env.NEXT_PUBLIC_API_ENDPOINT : options.baseUrl
-  const fullUrl = url.startsWith('/') ? `${baseUrl}${url}` : `${baseUrl}/${url}`
+  const params = options?.searchParams ? new URLSearchParams(options.searchParams).toString() : ''
+  const fullUrl = `${url.startsWith('/') ? `${baseUrl}${url}` : `${baseUrl}/${url}`}${params ? `?${params}` : ''}`
 
   const res = await fetch(fullUrl, {
     ...options,

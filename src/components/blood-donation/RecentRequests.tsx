@@ -34,7 +34,7 @@ export default function RecentRequests({ requests }: RecentRequestsProps) {
                   <Badge variant='outline' className='font-mono'>
                     {request.bloodType}
                   </Badge>
-                  <span>{request.quantity} đơn vị</span>
+                  <span>{request.quantity} ml</span>
                   <span className='flex items-center'>
                     <MapPin className='h-3 w-3 mr-1' />
                     {request.location}

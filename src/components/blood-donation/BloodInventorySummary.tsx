@@ -22,7 +22,7 @@ export default function BloodInventorySummary({ inventory }: BloodInventorySumma
                 <Badge variant='outline' className='font-mono font-bold'>
                   {blood.type}
                 </Badge>
-                <span className='text-sm text-muted-foreground'>{blood.available} đơn vị</span>
+                <span className='text-sm text-muted-foreground'>{blood.available} ml</span>
               </div>
               <Badge variant={getInventoryBadge(blood.status)}>{blood.status}</Badge>
             </div>
