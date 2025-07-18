@@ -42,7 +42,7 @@ export default function Login() {
         const { access_token, refresh_token } = res.payload.data
         login(access_token, refresh_token)
         toast.success('Đăng nhập thành công!')
-        route.push('/dashboard')
+        route.push('/reports')
       }
     } catch (error) {
       console.log('Login error:', error)

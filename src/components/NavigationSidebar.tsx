@@ -48,10 +48,10 @@ export default function NavigationSidebar({ sidebarOpen, setSidebarOpen }: Navig
   const { user, logout } = useAuthContext()
   const menuItems: MenuItem[] = [
     {
-      id: 'dashboard',
-      label: 'Dashboard',
-      icon: Home,
-      href: '/dashboard'
+      id: 'reports',
+      label: 'Báo cáo',
+      icon: BarChart3,
+      href: '/reports'
     },
     {
       id: 'requests',
@@ -60,12 +60,6 @@ export default function NavigationSidebar({ sidebarOpen, setSidebarOpen }: Navig
       badge: '23',
       badgeColor: 'destructive',
       href: '/requests'
-    },
-    {
-      id: 'donors',
-      label: 'Người hiến máu',
-      icon: Users,
-      href: '/donors'
     },
     {
       id: 'blood-inventory',
@@ -82,30 +76,10 @@ export default function NavigationSidebar({ sidebarOpen, setSidebarOpen }: Navig
       href: '/hospitals'
     },
     {
-      id: 'appointments',
-      label: 'Lịch hẹn',
-      icon: Calendar,
-      href: '/appointments'
-    },
-    {
       id: 'blog',
       label: 'Quản lý Blog',
       icon: FileText,
       href: '/blog'
-    },
-    {
-      id: 'reports',
-      label: 'Báo cáo',
-      icon: BarChart3,
-      href: '/reports'
-    },
-    {
-      id: 'notifications',
-      label: 'Thông báo',
-      icon: Bell,
-      badge: '12',
-      badgeColor: 'default',
-      href: '/notifications'
     },
     {
       id: 'management-user',
