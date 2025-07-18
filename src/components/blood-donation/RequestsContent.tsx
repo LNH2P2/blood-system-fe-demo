@@ -258,7 +258,7 @@ export default function RequestsContent({ requests }: RequestsContentProps) {
                       <div className='flex items-center space-x-2'>
                         <Heart className='h-4 w-4 text-red-500' />
                         <span className='text-gray-600'>Số lượng:</span>
-                        <span className='font-bold text-gray-800'>{request.quantity} đơn vị</span>
+                        <span className='font-bold text-gray-800'>{request.quantity} ml</span>
                       </div>
                       <div className='flex items-center space-x-2 text-gray-600'>
                         <MapPin className='h-4 w-4 text-blue-500' />

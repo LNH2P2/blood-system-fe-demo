@@ -164,7 +164,7 @@ export default function RequestDetail({ request, isOpen, onClose }: RequestDetai
                         <div className='flex items-center space-x-2'>
                           <Heart className='h-5 w-5 text-red-500' />
                           <span className='text-2xl font-bold text-gray-800'>{request.quantity}</span>
-                          <span className='text-gray-600'>đơn vị</span>
+                          <span className='text-gray-600'>ml</span>
                         </div>
                       </div>
                     </div>
