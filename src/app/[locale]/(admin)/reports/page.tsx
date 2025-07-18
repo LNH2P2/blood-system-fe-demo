@@ -3,6 +3,7 @@
 import Loading from '@/components/loading/loading'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+
 import { useAuthContext } from '@/contexts/auth-context'
 import {
   useBloodDonationHistory,
@@ -125,7 +126,6 @@ export default function ReportsPage() {
               <CardContent className='p-4'>
                 <h2 className='text-lg font-semibold mb-2'>Tồn kho máu theo nhóm</h2>
                 <p className='text-sm text-gray-500 mb-2'>Số lượng đơn vị máu còn lại ở từng nhóm máu trong kho.</p>
-
                 {inventory.length > 0 ? (
                   <>
                     <ul className='text-sm mb-2 text-gray-700'>
