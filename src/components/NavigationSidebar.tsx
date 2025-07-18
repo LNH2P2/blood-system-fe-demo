@@ -62,12 +62,6 @@ export default function NavigationSidebar({ sidebarOpen, setSidebarOpen }: Navig
       href: '/requests'
     },
     {
-      id: 'donors',
-      label: 'Người hiến máu',
-      icon: Users,
-      href: '/donors'
-    },
-    {
       id: 'blood-inventory',
       label: 'Kho máu',
       icon: Droplets,
