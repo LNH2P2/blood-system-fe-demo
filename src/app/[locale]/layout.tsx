@@ -1,13 +1,14 @@
-import { Toaster } from '@/components/ui/sonner'
 import { AuthProvider } from '@/contexts/auth-context'
 import { ReactQueryProvider } from '@/lib/query-client'
 import type { Metadata } from 'next'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { notFound } from 'next/navigation'
+import { Toaster } from '@/components/ui/sonner'
 import { routing } from '../../i18n/routing'
 import './globals.css'
 import { GlobalStorageListener } from '@/contexts/global-storage'
+
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin']

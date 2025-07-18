@@ -34,7 +34,7 @@ export default function DashboardPage() {
       bg: 'bg-green-50'
     },
     {
-      title: 'Đơn vị máu khả dụng',
+      title: 'Milliliter máu khả dụng',
       value: '1,234',
       change: '+8%',
       changeType: 'increase' as const,
