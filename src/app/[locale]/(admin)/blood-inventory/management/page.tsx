@@ -24,7 +24,6 @@ import {
   RefreshCw,
   MapPin,
   Droplets,
-  Heart,
   AlertTriangle,
   TrendingUp,
   Package,
@@ -166,7 +165,15 @@ export default function BloodInventoryManagementPage() {
     setIsCleanupDialogOpen(true)
   }
 
+  const handleFormOpenChange = (open: boolean) => {
+    setIsFormOpen(open)
+    if (!open) {
+      setEditItem(null) // Clear editItem when closing form to prevent stale data
+    }
+  }
+
   const handleFormSuccess = () => {
+    setEditItem(null) // Clear editItem to prevent stale data
     refetch()
   }
 
@@ -198,7 +205,7 @@ export default function BloodInventoryManagementPage() {
     const isExpired = expiryDate < today
 
     if (isExpired) {
-      return <Badge variant='destructive'>Hết hạn</Badge>
+      return <Badge variant='destructive'>Đã hết hạn</Badge>
     }
     if (isExpiringSoon) {
       return (
@@ -209,14 +216,14 @@ export default function BloodInventoryManagementPage() {
     }
     return (
       <Badge variant='outline' className='text-green-600 border-green-200'>
-        Còn tốt
+        Còn sử dụng
       </Badge>
     )
   }
 
   return (
     <div className='space-y-6'>
-      {/* Enhanced Gradient Header */}
+      {/* Tiêu đề Gradient nâng cao */}
       <div className='bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-lg shadow-lg'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center space-x-3'>
@@ -224,7 +231,7 @@ export default function BloodInventoryManagementPage() {
               <Settings className='h-8 w-8' />
             </div>
             <div>
-              <h1 className='text-2xl font-bold'>Quản Lý Kho Máu</h1>
+              <h1 className='text-2xl font-bold'>Quản lý kho máu</h1>
               <p className='text-blue-100 mt-1'>Quản lý kho máu tại tất cả các bệnh viện trong hệ thống</p>
             </div>
           </div>
@@ -234,53 +241,53 @@ export default function BloodInventoryManagementPage() {
               <div className='text-lg font-semibold'>{currentTime || '--:--:--'}</div>
             </div>
             <div className='text-right'>
-              <div className='text-sm text-blue-100'>Tổng bệnh viện</div>
+              <div className='text-sm text-blue-100'>Tổng số bệnh viện</div>
               <div className='text-2xl font-bold'>{overallStats.totalHospitals}</div>
             </div>
             <div className='text-right'>
-              <div className='text-sm text-blue-100'>Tổng số lượng</div>
+              <div className='text-sm text-blue-100'>Tổng số lượng (ml)</div>
               <div className='text-2xl font-bold'>{overallStats.totalQuantity}</div>
             </div>
             <div className='text-right'>
-              <div className='text-sm text-blue-100'>Hết hạn</div>
+              <div className='text-sm text-blue-100'>Số mẫu hết hạn</div>
               <div className='text-2xl font-bold text-red-300'>{overallStats.totalExpired}</div>
             </div>
           </div>
         </div>
 
-        {/* Action Buttons in Header */}
+        {/* Nút thao tác trong header */}
         <div className='flex justify-end mt-4 space-x-3'>
           <Button
             variant='outline'
             size='sm'
             onClick={handleAddNew}
-            className='border-white/30 text-white hover:bg-white/10'
+            className='border-white/30 text-white hover:bg-white/10  bg-white/20'
           >
             <Plus className='h-4 w-4 mr-2' />
-            Thêm mới
+            Thêm mẫu máu
           </Button>
           <Button
             variant='outline'
             size='sm'
             onClick={handleCleanup}
-            className='border-white/30 text-white hover:bg-white/10'
+            className='border-white/30 text-white hover:bg-white/10  bg-white/20'
           >
             <Trash2 className='h-4 w-4 mr-2' />
-            Dọn dẹp hết hạn
+            Dọn dẹp mẫu hết hạn
           </Button>
           <Button
             variant='outline'
             size='sm'
             onClick={() => refetch()}
-            className='border-white/30 text-white hover:bg-white/10'
+            className='border-white/30 text-white hover:bg-white/10  bg-white/20'
           >
             <RefreshCw className='h-4 w-4 mr-2' />
-            Làm mới
+            Làm mới dữ liệu
           </Button>
         </div>
       </div>
 
-      {/* Enhanced Statistics Dashboard */}
+      {/* Bảng điều khiển thống kê nâng cao */}
       <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
         <Card className='border-blue-200 bg-blue-50 hover:shadow-lg transition-shadow'>
           <CardContent className='p-4'>
@@ -303,7 +310,7 @@ export default function BloodInventoryManagementPage() {
               <div>
                 <p className='text-sm font-medium text-green-600'>Tổng số lượng</p>
                 <p className='text-2xl font-bold text-green-700'>{overallStats.totalQuantity}</p>
-                <p className='text-xs text-green-600 mt-1'>Đơn vị máu trong kho</p>
+                <p className='text-xs text-green-600 mt-1'>Milliliter máu trong kho</p>
               </div>
               <div className='bg-green-100 p-3 rounded-full'>
                 <Droplets className='h-6 w-6 text-green-500' />
@@ -316,9 +323,9 @@ export default function BloodInventoryManagementPage() {
           <CardContent className='p-4'>
             <div className='flex items-center justify-between'>
               <div>
-                <p className='text-sm font-medium text-purple-600'>Tổng mẫu</p>
+                <p className='text-sm font-medium text-purple-600'>Tổng mẫu máu</p>
                 <p className='text-2xl font-bold text-purple-700'>{overallStats.totalItems}</p>
-                <p className='text-xs text-purple-600 mt-1'>Số mẫu máu</p>
+                <p className='text-xs text-purple-600 mt-1'>Số lượng mẫu máu</p>
               </div>
               <div className='bg-purple-100 p-3 rounded-full'>
                 <Package className='h-6 w-6 text-purple-500' />
@@ -333,7 +340,7 @@ export default function BloodInventoryManagementPage() {
               <div>
                 <p className='text-sm font-medium text-orange-600'>Sắp hết hạn</p>
                 <p className='text-2xl font-bold text-orange-700'>{overallStats.totalExpiringSoon}</p>
-                <p className='text-xs text-orange-600 mt-1'>Cần xử lý sớm</p>
+                <p className='text-xs text-orange-600 mt-1'>Cần xử lý trong tuần</p>
               </div>
               <div className='bg-orange-100 p-3 rounded-full'>
                 <Clock className='h-6 w-6 text-orange-500' />
@@ -343,7 +350,7 @@ export default function BloodInventoryManagementPage() {
         </Card>
       </div>
 
-      {/* Critical Alerts */}
+      {/* Cảnh báo nghiêm trọng */}
       {(overallStats.totalExpired > 0 || overallStats.totalExpiringSoon > 5) && (
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           {overallStats.totalExpired > 0 && (
@@ -353,7 +360,7 @@ export default function BloodInventoryManagementPage() {
                   <div>
                     <p className='text-sm font-medium text-red-600'>Cảnh báo hết hạn</p>
                     <p className='text-2xl font-bold text-red-700'>{overallStats.totalExpired}</p>
-                    <p className='text-xs text-red-600 mt-1'>Mẫu máu đã hết hạn</p>
+                    <p className='text-xs text-red-600 mt-1'>Mẫu máu đã hết hạn sử dụng</p>
                   </div>
                   <div className='bg-red-100 p-3 rounded-full'>
                     <AlertTriangle className='h-6 w-6 text-red-500' />
@@ -370,7 +377,7 @@ export default function BloodInventoryManagementPage() {
                   <div>
                     <p className='text-sm font-medium text-yellow-600'>Cảnh báo sắp hết hạn</p>
                     <p className='text-2xl font-bold text-yellow-700'>{overallStats.totalExpiringSoon}</p>
-                    <p className='text-xs text-yellow-600 mt-1'>Mẫu máu sắp hết hạn</p>
+                    <p className='text-xs text-yellow-600 mt-1'>Mẫu máu sắp hết hạn trong 7 ngày</p>
                   </div>
                   <div className='bg-yellow-100 p-3 rounded-full'>
                     <TrendingUp className='h-6 w-6 text-yellow-500' />
@@ -382,34 +389,17 @@ export default function BloodInventoryManagementPage() {
         </div>
       )}
 
-      {/* Enhanced Filters */}
-      <Card className='shadow-lg border-0'>
-        <CardHeader className='bg-gray-50/50 border-b'>
-          <div className='flex items-center justify-between'>
-            <div className='flex items-center space-x-3'>
-              <div className='bg-blue-100 p-2 rounded-lg'>
-                <Settings className='h-5 w-5 text-blue-600' />
-              </div>
-              <div>
-                <CardTitle className='text-gray-800'>Bộ lọc & Tìm kiếm</CardTitle>
-                <p className='text-sm text-gray-600 mt-1'>Lọc và tìm kiếm dữ liệu kho máu</p>
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className='p-6'>
-          <BloodInventoryFilters filters={filters} onFiltersChange={setFilters} onReset={handleReset} />
-        </CardContent>
-      </Card>
+      {/* Bộ lọc nâng cao */}
+      <BloodInventoryFilters filters={filters} onFiltersChange={setFilters} onReset={handleReset} />
 
-      {/* Grouped Data Display */}
+      {/* Hiển thị dữ liệu theo nhóm bệnh viện */}
       {isLoading ? (
         <div className='space-y-4'>
           <Skeleton className='h-20 w-full' />
           <Skeleton className='h-64 w-full' />
         </div>
       ) : error ? (
-        <div className='text-red-500 text-center py-8'>Error loading blood inventory data: {error.message}</div>
+        <div className='text-red-500 text-center py-8'>Lỗi khi tải dữ liệu kho máu: {error.message}</div>
       ) : (
         <div className='space-y-4'>
           {groupedData.length === 0 ? (
@@ -444,7 +434,7 @@ export default function BloodInventoryManagementPage() {
                         <div className='text-lg font-bold text-green-700'>
                           {hospitalGroup.totalQuantity.toLocaleString()}
                         </div>
-                        <div className='text-xs text-gray-600'>Tổng đơn vị</div>
+                        <div className='text-xs text-gray-600'>Tổng ml</div>
                       </div>
                       {hospitalGroup.expiredCount > 0 && (
                         <div className='text-center'>
@@ -480,7 +470,7 @@ export default function BloodInventoryManagementPage() {
                             <TableCell>{getBloodTypeBadge(item.bloodType)}</TableCell>
                             <TableCell>{getComponentBadge(item.component)}</TableCell>
                             <TableCell>
-                              <span className='font-medium'>{item.quantity.toLocaleString()} đơn vị</span>
+                              <span className='font-medium'>{item.quantity.toLocaleString()} ml</span>
                             </TableCell>
                             <TableCell>
                               <span className={item.isExpiringSoon ? 'text-orange-600 font-medium' : ''}>
@@ -519,22 +509,22 @@ export default function BloodInventoryManagementPage() {
         </div>
       )}
 
-      {/* Footer Information */}
+      {/* Thông tin chân trang */}
       <Card className='bg-gradient-to-r from-gray-50 to-gray-100 border-0'>
         <CardContent className='p-4'>
           <div className='flex items-center justify-between text-sm text-gray-600'>
             <div className='flex items-center space-x-6'>
               <div className='flex items-center space-x-2'>
                 <div className='w-3 h-3 bg-green-500 rounded-full'></div>
-                <span>Tốt: Hạn sử dụng còn dài</span>
+                <span>Tốt: Còn hạn sử dụng</span>
               </div>
               <div className='flex items-center space-x-2'>
                 <div className='w-3 h-3 bg-yellow-500 rounded-full'></div>
-                <span>Cảnh báo: Sắp hết hạn</span>
+                <span>Cảnh báo: Sắp hết hạn trong 7 ngày</span>
               </div>
               <div className='flex items-center space-x-2'>
                 <div className='w-3 h-3 bg-red-500 rounded-full animate-pulse'></div>
-                <span>Nguy hiểm: Đã hết hạn</span>
+                <span>Nguy hiểm: Đã hết hạn sử dụng</span>
               </div>
             </div>
             <div className='text-right'>
@@ -544,15 +534,15 @@ export default function BloodInventoryManagementPage() {
         </CardContent>
       </Card>
 
-      {/* Add/Edit Form Modal */}
+      {/* Form Modal Thêm/Sửa */}
       <BloodInventoryForm
         open={isFormOpen}
-        onOpenChange={setIsFormOpen}
+        onOpenChange={handleFormOpenChange}
         editItem={editItem}
         onSuccess={handleFormSuccess}
       />
 
-      {/* Delete Confirmation Dialog */}
+      {/* Dialog xác nhận xóa */}
       <BloodInventoryDeleteDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
@@ -560,7 +550,7 @@ export default function BloodInventoryManagementPage() {
         onSuccess={handleDeleteSuccess}
       />
 
-      {/* Cleanup Expired Dialog */}
+      {/* Dialog dọn dẹp mẫu hết hạn */}
       <CleanupExpiredDialog
         open={isCleanupDialogOpen}
         onOpenChange={setIsCleanupDialogOpen}
