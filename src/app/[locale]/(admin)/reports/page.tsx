@@ -14,15 +14,6 @@ const bloodInventoryData = [
   { name: 'A-', value: 67 },
 ]
 
-const donationHistoryDetailed = [
-  { month: 'Tháng 1', A: 30, B: 25, AB: 20, O: 45, total: 120 },
-  { month: 'Tháng 2', A: 35, B: 28, AB: 22, O: 65, total: 150 },
-  { month: 'Tháng 3', A: 40, B: 33, AB: 25, O: 82, total: 180 },
-  { month: 'Tháng 4', A: 32, B: 30, AB: 18, O: 60, total: 140 },
-  { month: 'Tháng 5', A: 50, B: 40, AB: 25, O: 85, total: 200 },
-  { month: 'Tháng 6', A: 42, B: 35, AB: 23, O: 70, total: 170 },
-]
-
 const requestStatsData = [
   { name: 'Đã xử lý', value: 320 },
   { name: 'Đang chờ', value: 45 },
@@ -84,39 +75,6 @@ export default function ReportsPage() {
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card className='col-span-1 xl:col-span-2'>
-          <CardContent className='p-4'>
-            <h2 className='text-lg font-semibold mb-2'>Lịch sử hiến máu theo nhóm máu và tháng</h2>
-            <p className='text-sm text-gray-500 mb-2'>Bảng thống kê chi tiết số lượt hiến máu theo từng nhóm máu trong 6 tháng gần nhất.</p>
-            <div className='overflow-x-auto'>
-              <table className='min-w-full border text-sm'>
-                <thead className='bg-gray-100'>
-                  <tr>
-                    <th className='border px-3 py-2'>Tháng</th>
-                    <th className='border px-3 py-2'>Nhóm A</th>
-                    <th className='border px-3 py-2'>Nhóm B</th>
-                    <th className='border px-3 py-2'>Nhóm AB</th>
-                    <th className='border px-3 py-2'>Nhóm O</th>
-                    <th className='border px-3 py-2'>Tổng</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {donationHistoryDetailed.map((row, index) => (
-                    <tr key={index} className='text-center'>
-                      <td className='border px-3 py-1'>{row.month}</td>
-                      <td className='border px-3 py-1'>{row.A}</td>
-                      <td className='border px-3 py-1'>{row.B}</td>
-                      <td className='border px-3 py-1'>{row.AB}</td>
-                      <td className='border px-3 py-1'>{row.O}</td>
-                      <td className='border px-3 py-1 font-semibold'>{row.total}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
           </CardContent>
         </Card>
 

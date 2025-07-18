@@ -5,6 +5,7 @@ import { useRouter } from '../../i18n/navigation'
 import AppHeader from '@/components/AppHeader'
 import AppFooter from '@/components/AppFooter'
 import HomePage from './home/HomePage'
+import FacilityList from './facility/FacilityList'
 
 export default function Home() {
   const router = useRouter()
