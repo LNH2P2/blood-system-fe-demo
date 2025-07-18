@@ -38,21 +38,20 @@ export function CleanupExpiredDialog({ open, onOpenChange, onSuccess }: CleanupE
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Cleanup Expired Blood</AlertDialogTitle>
+          <AlertDialogTitle>Dọn dẹp mẫu máu hết hạn</AlertDialogTitle>
           <AlertDialogDescription>
-            This action will permanently remove all expired blood inventory items from the system. This action cannot be
-            undone.
+            Hành động này sẽ xóa vĩnh viễn tất cả các mẫu máu đã hết hạn khỏi hệ thống. Thao tác này không thể hoàn tác.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={cleanupMutation.isPending}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={cleanupMutation.isPending}>Hủy</AlertDialogCancel>
           <AlertDialogAction
             onClick={(e) => handleCleanup(e)}
             disabled={cleanupMutation.isPending}
             className='bg-orange-600 hover:bg-orange-700'
           >
             {cleanupMutation.isPending && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
-            Cleanup Expired
+            Dọn dẹp mẫu hết hạn
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

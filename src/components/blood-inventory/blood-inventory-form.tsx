@@ -68,6 +68,15 @@ export function BloodInventoryForm({ open, onOpenChange, editItem, onSuccess }: 
           expiresAt: ''
         })
       }
+    } else {
+      // Reset form when dialog closes to prevent stale data
+      form.reset({
+        hospitalId: '',
+        bloodType: undefined,
+        component: undefined,
+        quantity: 1,
+        expiresAt: ''
+      })
     }
   }, [editItem, open, form])
 
@@ -112,7 +121,7 @@ export function BloodInventoryForm({ open, onOpenChange, editItem, onSuccess }: 
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className='sm:max-w-[600px]'>
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Edit Blood Inventory Item' : 'Add Blood Inventory Item'}</DialogTitle>
+          <DialogTitle>{isEditing ? 'Chỉnh sửa mẫu máu' : 'Thêm mẫu máu mới'}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -122,11 +131,11 @@ export function BloodInventoryForm({ open, onOpenChange, editItem, onSuccess }: 
               name='hospitalId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Hospital</FormLabel>
+                  <FormLabel>Bệnh viện</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value} disabled={isEditing || hospitalsLoading}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder='Select hospital' />
+                        <SelectValue placeholder='Chọn bệnh viện' />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -148,11 +157,11 @@ export function BloodInventoryForm({ open, onOpenChange, editItem, onSuccess }: 
                 name='bloodType'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Blood Type</FormLabel>
+                    <FormLabel>Nhóm máu</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder='Select blood type' />
+                          <SelectValue placeholder='Chọn nhóm máu' />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -173,11 +182,11 @@ export function BloodInventoryForm({ open, onOpenChange, editItem, onSuccess }: 
                 name='component'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Component</FormLabel>
+                    <FormLabel>Thành phần máu</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder='Select component' />
+                          <SelectValue placeholder='Chọn thành phần máu' />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -200,12 +209,13 @@ export function BloodInventoryForm({ open, onOpenChange, editItem, onSuccess }: 
                 name='quantity'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Quantity (units)</FormLabel>
+                    <FormLabel>Số lượng (ml)</FormLabel>
                     <FormControl>
                       <Input
                         type='number'
                         min='1'
                         max='9999'
+                        placeholder='Nhập số lượng'
                         {...field}
                         onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
                       />
@@ -220,7 +230,7 @@ export function BloodInventoryForm({ open, onOpenChange, editItem, onSuccess }: 
                 name='expiresAt'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Expiration Date</FormLabel>
+                    <FormLabel>Ngày hết hạn</FormLabel>
                     <FormControl>
                       <Input type='date' {...field} />
                     </FormControl>
@@ -232,11 +242,11 @@ export function BloodInventoryForm({ open, onOpenChange, editItem, onSuccess }: 
 
             <div className='flex justify-end space-x-2 pt-4'>
               <Button type='button' variant='outline' onClick={() => handleOpenChange(false)} disabled={isLoading}>
-                Cancel
+                Hủy
               </Button>
               <Button type='submit' disabled={isLoading}>
                 {isLoading && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
-                {isEditing ? 'Update' : 'Add'} Item
+                {isEditing ? 'Cập nhật' : 'Thêm mới'}
               </Button>
             </div>
           </form>

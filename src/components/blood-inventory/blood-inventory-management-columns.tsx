@@ -26,11 +26,11 @@ const ColumnActions = ({ item, onEdit, onDelete }: ColumnActionsProps) => {
       <DropdownMenuContent align='end'>
         <DropdownMenuItem onClick={() => onEdit(item)}>
           <Edit className='mr-2 h-4 w-4' />
-          Edit
+          Chỉnh sửa
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onDelete(item)} className='text-red-600'>
           <Trash2 className='mr-2 h-4 w-4' />
-          Delete
+          Xóa
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -81,7 +81,7 @@ export const createBloodInventoryColumns = (
     header: 'Quantity',
     cell: ({ row }) => {
       const quantity = row.getValue('quantity') as number
-      return <span className='font-medium'>{quantity.toLocaleString()} units</span>
+      return <span className='font-medium'>{quantity.toLocaleString()} ml</span>
     }
   },
   {

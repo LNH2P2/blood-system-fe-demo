@@ -65,7 +65,7 @@ export function BloodInventoryToolbar({ filters, onFiltersChange, onReset }: Blo
       <div className='relative'>
         <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
         <Input
-          placeholder='Search blood inventory...'
+          placeholder='Tìm kiếm kho máu...'
           value={filters.search || ''}
           onChange={(e) => handleSearchChange(e.target.value)}
           className='pl-10'
@@ -76,13 +76,13 @@ export function BloodInventoryToolbar({ filters, onFiltersChange, onReset }: Blo
       <div className='flex flex-wrap items-center gap-3'>
         {/* Blood Type Filter */}
         <div className='flex items-center gap-2'>
-          <span className='text-sm font-medium text-gray-700'>Blood Type:</span>
+          <span className='text-sm font-medium text-gray-700'>Nhóm máu:</span>
           <Select value={filters.bloodType || 'all'} onValueChange={(value) => handleFilterChange('bloodType', value)}>
             <SelectTrigger className='w-[140px]'>
-              <SelectValue placeholder='All Types' />
+              <SelectValue placeholder='Tất cả' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value='all'>All Types</SelectItem>
+              <SelectItem value='all'>Tất cả</SelectItem>
               {bloodTypes.map((type) => (
                 <SelectItem key={type.value} value={type.value}>
                   <span className={`font-mono font-semibold ${type.color}`}>{type.label}</span>
@@ -94,13 +94,13 @@ export function BloodInventoryToolbar({ filters, onFiltersChange, onReset }: Blo
 
         {/* Component Filter */}
         <div className='flex items-center gap-2'>
-          <span className='text-sm font-medium text-gray-700'>Component:</span>
+          <span className='text-sm font-medium text-gray-700'>Thành phần:</span>
           <Select value={filters.component || 'all'} onValueChange={(value) => handleFilterChange('component', value)}>
             <SelectTrigger className='w-[160px]'>
-              <SelectValue placeholder='All Components' />
+              <SelectValue placeholder='Tất cả thành phần' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value='all'>All Components</SelectItem>
+              <SelectItem value='all'>Tất cả thành phần</SelectItem>
               {components.map((comp) => (
                 <SelectItem key={comp.value} value={comp.value}>
                   <span className='flex items-center gap-2'>
@@ -115,13 +115,13 @@ export function BloodInventoryToolbar({ filters, onFiltersChange, onReset }: Blo
 
         {/* Stock Status Filter */}
         <div className='flex items-center gap-2'>
-          <span className='text-sm font-medium text-gray-700'>Status:</span>
+          <span className='text-sm font-medium text-gray-700'>Trạng thái:</span>
           <Select value={filters.status || 'all'} onValueChange={(value) => handleFilterChange('status', value)}>
             <SelectTrigger className='w-[150px]'>
-              <SelectValue placeholder='All Status' />
+              <SelectValue placeholder='Tất cả trạng thái' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value='all'>All Status</SelectItem>
+              <SelectItem value='all'>Tất cả trạng thái</SelectItem>
               {stockStatus.map((status) => (
                 <SelectItem key={status.value} value={status.value}>
                   <span className='flex items-center gap-2'>
@@ -137,14 +137,14 @@ export function BloodInventoryToolbar({ filters, onFiltersChange, onReset }: Blo
         {/* Reset Button */}
         <Button onClick={onReset} variant='outline' size='sm' className='flex items-center gap-2'>
           <RotateCcw className='h-4 w-4' />
-          Reset Filters
+          Đặt lại bộ lọc
         </Button>
       </div>
 
       {/* Active Filters Display */}
       {Object.keys(filters).length > 0 && (
         <div className='flex flex-wrap items-center gap-2'>
-          <span className='text-sm text-gray-500'>Active filters:</span>
+          <span className='text-sm text-gray-500'>Bộ lọc đang áp dụng:</span>
           {Object.entries(filters).map(([key, value]) => (
             <div key={key} className='bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs flex items-center gap-1'>
               <span className='font-medium'>{key}:</span>

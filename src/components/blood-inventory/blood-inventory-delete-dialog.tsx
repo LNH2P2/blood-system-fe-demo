@@ -47,26 +47,26 @@ export function BloodInventoryDeleteDialog({ open, onOpenChange, item, onSuccess
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Blood Inventory Item</AlertDialogTitle>
+          <AlertDialogTitle>Xóa mẫu máu</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className='space-y-2 text-sm text-muted-foreground'>
-              <p>This action cannot be undone. This will permanently remove the blood inventory item.</p>
+              <p>Hành động này không thể hoàn tác. Mẫu máu sẽ bị xóa vĩnh viễn khỏi hệ thống.</p>
               {item && (
                 <div className='bg-gray-50 p-3 rounded-md space-y-1 text-gray-800'>
                   <div className='font-medium'>
                     <span>
-                      <strong>Hospital:</strong> {item.hospitalName}
+                      <strong>Bệnh viện:</strong> {item.hospitalName}
                     </span>
                   </div>
                   <div>
                     <span>
-                      <strong>Blood Type:</strong> {bloodTypeLabel}
+                      <strong>Nhóm máu:</strong> {bloodTypeLabel}
                     </span>
                     <span> ({componentLabel})</span>
                   </div>
                   <div>
                     <span>
-                      <strong>Quantity:</strong> {item.quantity} units
+                      <strong>Số lượng:</strong> {item.quantity} ml
                     </span>
                   </div>
                 </div>
@@ -75,14 +75,14 @@ export function BloodInventoryDeleteDialog({ open, onOpenChange, item, onSuccess
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={deleteMutation.isPending}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={deleteMutation.isPending}>Hủy</AlertDialogCancel>
           <AlertDialogAction
             onClick={(e) => handleDelete(e)}
             disabled={deleteMutation.isPending}
             className='bg-red-600 hover:bg-red-700'
           >
             {deleteMutation.isPending && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
-            Delete
+            Xóa
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
