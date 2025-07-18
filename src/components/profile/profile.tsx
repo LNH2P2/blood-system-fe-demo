@@ -2,7 +2,9 @@
 
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { useAuthContext } from '@/contexts/auth-context'
 import { formatDate } from '@/hooks/format-date'
+import { useGetHospitalsName } from '@/hooks/use-api/use-hopsital'
 import { useUploadLocalFile } from '@/hooks/use-api/use-upfile'
 import {
   useCreateUserAddress,
@@ -26,10 +28,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Input } from '../ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 export default function UserProfile({ userId }: { userId: string }) {
+  const { refreshAccessToken } = useAuthContext()
   const { data: user, isLoading } = useGetUserById(userId)
   const updateUser = useUpdateUser(userId)
   const createAddress = useCreateUserAddress(userId)
   const deleteAddress = useDeleteUserAddress(userId)
+  const { data: hospitalName, isLoading: hospitalLosting } = useGetHospitalsName()
   const [isEditing, setIsEditing] = useState(false)
   const [editingAddress, setEditingAddress] = useState<any | null>(null)
   const uploadImage = useUploadLocalFile()
@@ -50,6 +54,7 @@ export default function UserProfile({ userId }: { userId: string }) {
   const dateOfBirthRaw = form.watch('dateOfBirth')
   const dateOfBirth = dateOfBirthRaw ? new Date(dateOfBirthRaw) : undefined
   const isValidDate = dateOfBirth instanceof Date && !isNaN(dateOfBirth.getTime())
+
   useEffect(() => {
     if (user) {
       form.reset({
@@ -59,14 +64,14 @@ export default function UserProfile({ userId }: { userId: string }) {
         gender: user.payload.data.gender,
         image: user.payload.data.image || '',
         dateOfBirth: user.payload.data.dateOfBirth,
-        bloodType: user.payload.data.bloodType || ''
+        bloodType: user.payload.data.bloodType || '',
+        hospitalId: (user.payload.data.hospitalId && user.payload.data.hospitalId?._id) || ''
       })
     }
   }, [user, form])
 
   const onSubmit = async (values: any) => {
     try {
-      console.log('Submitted values:', values)
       const original = user?.payload.data as Record<string, any>
       if (!original) return
 
@@ -89,6 +94,7 @@ export default function UserProfile({ userId }: { userId: string }) {
       }
 
       await updateUser.mutateAsync(changedValues)
+      await refreshAccessToken()
       setIsEditing(false)
       toast.success('Cập nhật người dùng thành công')
     } catch (error) {
@@ -163,7 +169,7 @@ export default function UserProfile({ userId }: { userId: string }) {
       toast.error('Cập nhật địa chỉ thất bại')
     }
   }
-  if (isLoading) {
+  if (isLoading || hospitalLosting) {
     return <Loading />
   }
 
@@ -283,6 +289,40 @@ export default function UserProfile({ userId }: { userId: string }) {
                 )}
               </div>
 
+              <div>
+                <Controller
+                  name='hospitalId'
+                  control={form.control}
+                  defaultValue={user?.payload.data.hospitalId?._id || ''}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value)
+                      }}
+                      disabled={!isEditing}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder='Chọn bệnh viện'>
+                          {hospitalName?.payload?.data.find((h) => h._id === field.value)?.name || 'Chọn bệnh viện'}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {hospitalName?.payload?.data.map((hospital) => (
+                          <SelectItem key={hospital._id} value={hospital._id}>
+                            {hospital.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+
+                {form.formState.errors.hospitalId && (
+                  <p className='text-sm text-red-500'>{form.formState.errors.hospitalId.message}</p>
+                )}
+              </div>
+
               {isEditing ? (
                 <Popover>
                   <PopoverTrigger asChild>
@@ -325,8 +365,14 @@ export default function UserProfile({ userId }: { userId: string }) {
                     variant='outline'
                     type='button'
                     onClick={() => {
-                      form.reset(user?.payload.data)
-                      setIsEditing(false)
+                      if (user) {
+                        setIsEditing(false)
+                        const data = user.payload.data
+                        form.reset({
+                          ...data,
+                          hospitalId: data.hospitalId?._id || ''
+                        })
+                      }
                     }}
                     className='cursor-pointer'
                   >
