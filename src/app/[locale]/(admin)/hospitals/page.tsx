@@ -317,7 +317,7 @@ export default function HospitalsPage() {
                                 (sum: number, item: BloodInventoryItem) => sum + item.quantity,
                                 0
                               )}{' '}
-                              đơn vị
+                              ml
                             </span>
                           </div>
                           <div className='flex flex-wrap gap-1'>
