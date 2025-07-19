@@ -2,9 +2,11 @@ import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { blogApi } from '@/lib/apis/blog.api';
 import { Blog, BlogStatus } from '@/types/blog';
+import { useRouter } from '../../../i18n/navigation';
 
 const BlogListPage: React.FC = () => {
     const [blogs, setBlogs] = useState<Blog[]>([]);
+    const router = useRouter();
 
     useEffect(() => {
         const handleBlogs = async () => {
@@ -47,7 +49,7 @@ const BlogListPage: React.FC = () => {
                             </div>
 
                             <div className='p-4'>
-                                <Link href={`/vi/blog/${blog._id}`}>
+                                <Link href={`/vi/blogs/${blog._id}`}>
                                     <div>
                                         <h3 className='text-xl font-semibold text-gray-800 mb-2 line-clamp-2'>
                                             {blog.title}

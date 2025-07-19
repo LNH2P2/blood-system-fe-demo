@@ -34,6 +34,12 @@ export interface UpdateBlogDto {
   category?: string
 }
 
+export interface BlogDetailResponse {
+  statusCode: number
+  message: string
+  data: Blog
+}
+
 export interface BlogListResponse {
   statusCode: number
   message: string

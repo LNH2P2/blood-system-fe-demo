@@ -1,5 +1,5 @@
 import http from '@/lib/http'
-import { Blog, CreateBlogDto, UpdateBlogDto, BlogListResponse, BlogFilters } from '@/types/blog'
+import { Blog, CreateBlogDto, UpdateBlogDto, BlogListResponse, BlogFilters, BlogDetailResponse } from '@/types/blog'
 
 const BASE_PATH = '/blog'
 
@@ -33,7 +33,7 @@ export const blogApi = {
 
   // Get blog by ID
   getBlogById(id: string) {
-    return http.get<Blog>(`${BASE_PATH}/${id}`)
+    return http.get<BlogDetailResponse>(`${BASE_PATH}/${id}`)
   },
 
   // Create new blog
