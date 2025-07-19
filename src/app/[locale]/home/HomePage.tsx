@@ -6,9 +6,11 @@ import { Blog, BlogStatus } from '@/types/blog'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { Hospital } from '@/types/hospital'
+import { useRouter } from '../../../i18n/navigation'
+import { fi } from 'date-fns/locale'
 
 export default function HomePage() {
-
+    const router = useRouter()
     const [hospitals, setHospitals] = useState<Hospital[]>([]);
 
     useEffect(() => {
@@ -20,7 +22,8 @@ export default function HomePage() {
                 console.log('Fetched hospitals:', data)
 
                 if (data?.data) {
-                    setHospitals(data.data)
+                    const firstThree = data.data.slice(0, 2)
+                    setHospitals(firstThree)
                 }
             } catch (error) {
                 console.error('Error fetching hospitals:', error)
@@ -38,12 +41,13 @@ export default function HomePage() {
         const handleBlogs = async () => {
             try {
                 const res = await blogApi.getBlogs({
-                    status: BlogStatus.PUBLISHED,
-                    limit: 4
+                    order: 'asc',
+                    status: BlogStatus.PUBLISHED
                 })
                 console.log('Fetched blogs:', res.payload.data.data);
                 if (res.payload?.data) {
-                    setBlogs(res.payload.data.data)
+                    const firstThree = res.payload.data.data.slice(0, 3)
+                    setBlogs(firstThree)
                 }
             } catch (error) {
                 console.error('Error fetching blogs:', error)
@@ -111,12 +115,12 @@ export default function HomePage() {
                 </div>
 
                 <div className='mt-4 flex justify-center'>
-                    <Link
-                        href='/'
+                    <button
+                        onClick={() => router.push('/facility')}
                         className='text-[#DC2626] bg-gray-100 px-6 py-2 rounded-full hover:bg-gray-200 transition duration-300 text-center'
                     >
                         Xem thêm bệnh viện
-                    </Link>
+                    </button>
                 </div>
             </section>
 
@@ -144,23 +148,23 @@ export default function HomePage() {
                                 />
                             </div>
                             <div className='p-4 '>
-                                <Link href={`/blog:id/${blog._id}`}>
+                                <button onClick={() => router.push(`/blogs/${blog._id}`)}>
                                     <h3 className='text-lg font-bold text-[#DC2626] mb-2'>{blog.title}</h3>
                                     <p className='text-sm text-black/80 mb-3'>{blog.summary}</p>
                                     <p className='text-xs text-black/50 line-clamp-3'>{blog.content}</p>
-                                </Link>
+                                </button>
                             </div>
                         </div>
 
                     ))}
                 </div>
                 <div className='mt-4 flex justify-center'>
-                    <Link
-                        href='/vi/blog'
+                    <button
+                        onClick={() => router.push('/blogs')}
                         className='text-[#DC2626] bg-gray-100 px-6 py-2 rounded-full hover:bg-gray-200 transition duration-300 text-center'
                     >
                         Xem thêm bài viết
-                    </Link>
+                    </button>
                 </div>
             </section>
 
